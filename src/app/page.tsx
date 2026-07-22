@@ -324,7 +324,8 @@ export default function App() {
             {/* Sidebar Tools Grid / Scrollable list */}
             <div className="w-full space-y-1">
               {[
-                { id: 'compos', label: 'التراكيب اللغوية', icon: "/icon/tool-search.svg"  },
+                { id: 'compos', label: 'الظواهر الصوتية', icon: "/icon/tool-ngrams.svg" },
+                { id: 'distribution', label: 'التراكيب اللغوية', icon: "/icon/tool-search.svg"  },
                 { id: 'concordance', label: 'الكشاف السياقي', icon: "/icon/tool-concordancer.svg" },
                 { id: 'frequency', label: 'قوائم الشيوع', icon: "/icon/tool-words-frequency-lists.svg" },
                 { id: 'ngrams', label: 'التتابعات اللفظية', icon: "/icon/tool-ngrams.svg" },
