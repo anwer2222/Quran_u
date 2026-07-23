@@ -37,8 +37,8 @@
   --sidebar-accent-foreground: oklch(0.3729 0.0306 259.7328);
   --sidebar-border: oklch(0.9276 0.0058 264.5313);
   --sidebar-ring: oklch(0.7227 0.1920 149.5793);
-  --font-sans: DM Sans, sans-serif;
-  --font-serif: Lora, serif;
+  --font-sans: "Cairo", sans-serif;
+  --font-serif: "Cairo", sans-serif;
   --font-mono: IBM Plex Mono, monospace;
   --radius: 0.5rem;
   --shadow-x: 0px;

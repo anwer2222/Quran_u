@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import SurahAyahSearch from "./SurahAyahSearch";
 
 // --- نماذج البيانات (Data Types) ---
 interface WordOccurrence {
@@ -199,7 +200,7 @@ export default function QuranAudioSearchPage() {
         {/* رأس الصفحة + اختيار الرواية العالمي */}
         <header className="border-b border-border pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-serif font-bold text-primary">التراكيب اللغوية</h1>
+            <h1 className="text-3xl font-serif font-bold text-primary">الظواهر الصوتية</h1>
             <p className="text-muted-foreground text-sm">استمع للتلاوات الصوتية النقية وقارن نطق الكلمات وأحكام التجويد عبر الملفات الصوتية المباشرة.</p>
           </div>
 
@@ -254,34 +255,27 @@ export default function QuranAudioSearchPage() {
               </div>
 
               {/* 1. البحث بالسورة والآية */}
+              
+
+              {/* // Inside your Page component render block: */}
               {searchMethod === "structure" && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-muted-foreground mb-1">السورة</label>
-                    <select
-                      value={selectedSurah}
-                      onChange={(e) => { setSelectedSurah(e.target.value); setSelectedAyahNum(""); }}
-                      className="w-full p-2 rounded-radius border border-input bg-popover text-popover-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
-                      <option value="">اختر السورة</option>
-                      <option value="2">البقرة (2)</option>
-                      <option value="3">آل عمران (3)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-muted-foreground mb-1">الآية</label>
-                    <select
-                      value={selectedAyahNum}
-                      onChange={(e) => setSelectedAyahNum(e.target.value)}
-                      disabled={!selectedSurah}
-                      className="w-full p-2 rounded-radius border border-input bg-popover text-popover-foreground disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
-                      <option value="">اختر الآية</option>
-                      {selectedSurah === "2" && <option value="30">الآية 30</option>}
-                      {selectedSurah === "3" && <option value="15">الآية 15</option>}
-                    </select>
-                  </div>
-                </div>
+                <SurahAyahSearch
+                  selectedRecitation={globalRecitation}
+                  onAyahSelected={(audioSrc, startTime, meta) => {
+                    if (audioRef.current) {
+                      // Only update src if the audio file has actually changed
+                      if (!audioRef.current.src.endsWith(audioSrc)) {
+                        audioRef.current.src = audioSrc;
+                      }
+                      audioRef.current.currentTime = startTime;
+                      audioRef.current.play();
+                      setIsPlaying(true);
+                    }
+                    
+                    // Update sidebar state
+                    setActiveVerseKey(`${meta.surah}:${meta.ayah}`);
+                  }}
+                />
               )}
 
               {/* 2. البحث بالكلمة والتشكيل */}

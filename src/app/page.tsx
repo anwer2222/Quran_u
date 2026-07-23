@@ -7,7 +7,7 @@ import {
   AlertCircle, Sparkles, BookOpen, Info, Compass, 
   LayoutGrid, Download
 } from 'lucide-react';
-import QuranAudioSearchPage from './language_components';
+import QuranAudioSearchPage from '../components/language_components';
 
 // Custom CSS styling block to inject Riyadh-Cairo-Amiri Arabic Typography 
 // and custom wavy background graphics inspired by "منصة فلك - مدونة القرآن الكريم.jpg"
@@ -325,7 +325,7 @@ export default function App() {
             <div className="w-full space-y-1">
               {[
                 { id: 'compos', label: 'الظواهر الصوتية', icon: "/icon/tool-ngrams.svg" },
-                { id: 'distribution', label: 'التراكيب اللغوية', icon: "/icon/tool-search.svg"  },
+                { id: 'compot', label: 'التراكيب اللغوية', icon: "/icon/tool-search.svg"  },
                 { id: 'concordance', label: 'الكشاف السياقي', icon: "/icon/tool-concordancer.svg" },
                 { id: 'frequency', label: 'قوائم الشيوع', icon: "/icon/tool-words-frequency-lists.svg" },
                 { id: 'ngrams', label: 'التتابعات اللفظية', icon: "/icon/tool-ngrams.svg" },
@@ -934,20 +934,7 @@ export default function App() {
                 <div className="w-14 h-14 bg-teal-50 rounded-full flex items-center justify-center mx-auto text-teal-600 border border-teal-100">
                   <Sparkles className="w-6 h-6 text-[#00a28a]" />
                 </div>
-                <div className="space-y-2">
-                  <h3 className="text-base font-extrabold text-slate-800">
-                    أداة {
-                      activeTool === 'collocates' ? 'الكلمات السابقة واللاحقة' :
-                      activeTool === 'affixes' ? 'السوابق واللواحق' :
-                      activeTool === 'distribution' ? 'توزيع التكرار' :
-                      activeTool === 'examples' ? 'البحث عن أمثلة' :
-                      'استخلاص المصطلحات'
-                    }
-                  </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    جاري إعداد محركات الحوسبة اللغوية المخصصة لهذه الأداة الفائقة بالاعتماد على مصفوفات مجمع الملك سلمان العالمي للغة العربية.
-                  </p>
-                </div>
+                
                 <button 
                   onClick={() => setActiveTool('home')}
                   className="text-xs font-bold text-white bg-[#00a28a] hover:bg-[#008f79] px-4 py-2 rounded-xl transition-all"
