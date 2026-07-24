@@ -153,6 +153,7 @@ export default function App() {
   const [showStopWords, setShowStopWords] = useState(true);
   const [frequencyLimit, setFrequencyLimit] = useState(20);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isSideModalOpen, setIsSideModalOpen] = useState(false);
 
   // Virtual Keyboard interactions
   const handleKeyTap = (char: string) => {
@@ -280,7 +281,7 @@ export default function App() {
           <div className="flex items-center gap-3 sm:w-auto lg:justify-start justify-center">
             
             <div className="relative">
-              <button className="bg-[#00a28a] hover:bg-[#008f79] text-white text-xs font-bold py-2.5 px-4 rounded-lg flex items-center gap-2 transition-all shadow-sm">
+              <button onClick={() => setIsSideModalOpen(true)} className="bg-[#00a28a] hover:bg-[#008f79] text-white text-xs font-bold py-2.5 px-4 rounded-lg flex items-center gap-2 transition-all shadow-sm">
                 <span>مدونة القرآن الكريم</span>
                 <span className="text-[10px]">▼</span>
               </button>
@@ -1001,6 +1002,71 @@ export default function App() {
           </div>
         </div>
       )}
+
+       {/* SIDE BAR: MAIN */}
+       {isSideModalOpen && (
+         <div className="fixed inset-0 z-50 flex items-center justify-end p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn" onClick={() => setIsSideModalOpen(false)}>
+           <div className="bg-white rounded-3xl max-w-20 overflow-y-scroll h-full w-full p-6 space-y-4 shadow-xl border border-slate-100 text-right">
+            <div className="flex justify-between items-start">
+
+            {/* Top Indicator / Logo trigger */}
+            <button 
+              onClick={() => setActiveTool('home')}
+              className="w-12 h-12 bg-teal-50/50 rounded-2xl flex items-center justify-center text-[#00a28a] border border-teal-100/50 hover:bg-teal-100/50 transition-colors mb-4"
+              title="رئيسية المدونة"
+            >
+              <Image src="/icon/falak-logo-without-text.svg" alt='' height={30} width={30}/>
+            </button>
+
+            {/* Sidebar Tools Grid / Scrollable list */}
+            <div className="w-full space-y-1">
+              {[
+                { id: 'compos', label: 'الظواهر الصوتية', icon: "/icon/tool-ngrams.svg" },
+                { id: 'compot', label: 'التراكيب اللغوية', icon: "/icon/tool-search.svg"  },
+                { id: 'concordance', label: 'الكشاف السياقي', icon: "/icon/tool-concordancer.svg" },
+                { id: 'frequency', label: 'قوائم الشيوع', icon: "/icon/tool-words-frequency-lists.svg" },
+                { id: 'ngrams', label: 'التتابعات اللفظية', icon: "/icon/tool-ngrams.svg" },
+                { id: 'collocates', label: 'الكلمات السابقة واللاحقة', icon: "/icon/tool-words-before-after.svg"  },
+                { id: 'affixes', label: 'السوابق واللواحق', icon: "/icon/tool-prefixes-and-suffixes.svg" },
+                { id: 'collocations', label: 'التصاحب اللفظي', icon: "/icon/tool-collocation.svg" },
+                { id: 'distribution', label: 'توزيع التكرار', icon: "/icon/tool-frequency-distribution.svg" },
+                { id: 'examples', label: 'البحث عن أمثلة', icon: "/icon/tool-search.svg" },
+                { id: 'terminology', label: 'استخلاص المصطلحات', icon: "/icon/tool-keywords.svg" },
+                { id: 'statistics', label: 'الإحصائيات', icon: "/icon/statistics-period.svg" }
+              ].map(tool => {
+                const IconComponent = tool.icon? tool.icon: "/icon/tool-concordancer.svg";
+                const isSelected = activeTool === tool.id;
+                return (
+                  <button
+                    key={tool.id}
+                    onClick={() => setActiveTool(tool.id as any)}
+                    className={`w-full group flex flex-col items-center p-3 rounded-2xl text-center transition-all ${
+                      isSelected 
+                        ? 'bg-teal-50 border border-teal-200/50 text-[#00a28a]' 
+                        : 'hover:bg-slate-50 text-slate-500 hover:text-slate-900 border border-transparent'
+                    }`}
+                  >
+                    {/* Circle icon frame */}
+                    <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${
+                      isSelected 
+                        ? 'border-[#00a28a] bg-white text-[#00a28a] shadow-sm' 
+                        : 'border-slate-100 bg-slate-50 group-hover:border-slate-300'
+                    }`}>
+                      <Image src={IconComponent} alt='' height={30} width={30}/>
+                    </div>
+                    {/* Small Arabic title label */}
+                    <span className="text-[10px] font-extrabold mt-2 leading-tight select-none">
+                      {tool.label}
+                    </span>
+                  </button>
+                );
+              })}
+             </div>
+            </div>
+          </div>
+
+          </div>
+       )}
 
     </div>
   );
