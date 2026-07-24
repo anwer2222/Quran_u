@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import SurahAyahSearch from "@/components/SurahAyahSearch";
 import WordSearch from "@/components/WordSearch";
+import TajweedSearch from "./TajweedSearch";
 
 interface ActiveAyahMeta {
   surah: number;
@@ -16,7 +17,7 @@ export default function QuranSearchPage() {
   const [globalRecitation, setGlobalRecitation] = useState<"hafs" | "warsh">("hafs");
 
   // 2. Active Search Method Tab ("structure" | "word")
-  const [searchMethod, setSearchMethod] = useState<"structure" | "word">("structure");
+  const [searchMethod, setSearchMethod] = useState<"structure" | "word" | "tajweed">("structure");
 
   // 3. Active Ayah Metadata for Side Panel & Audio State
   const [activeAyah, setActiveAyah] = useState<ActiveAyahMeta | null>(null);
@@ -120,6 +121,14 @@ export default function QuranSearchPage() {
                 >
                   البحث بالكلمة والتشكيل
                 </button>
+                <button
+                  onClick={() => setSearchMethod("tajweed")}
+                  className={`pb-2 px-1 font-medium text-sm transition-colors ${
+                    searchMethod === "tajweed" ? "border-b-2 border-primary text-primary font-bold" : "text-muted-foreground"
+                  }`}
+                >
+                  أحكام التجويد (الإدغام)
+                </button>
               </div>
 
               {/* Method 1 Component */}
@@ -133,6 +142,13 @@ export default function QuranSearchPage() {
               {/* Method 2 Component */}
               {searchMethod === "word" && (
                 <WordSearch
+                  selectedRecitation={globalRecitation}
+                  onAyahSelected={handleAyahSelected}
+                />
+              )}
+              {/* Render Method 3 */}
+              {searchMethod === "tajweed" && (
+                <TajweedSearch
                   selectedRecitation={globalRecitation}
                   onAyahSelected={handleAyahSelected}
                 />
@@ -190,7 +206,7 @@ export default function QuranSearchPage() {
                       <span className="inline-block text-xs font-mono bg-secondary text-secondary-foreground px-2 py-0.5 rounded-radius font-semibold mb-2">
                         سورة {activeAyah.surah} : الآية {activeAyah.ayah}
                       </span>
-                      <p className="text-xl font-serif text-right border-r-4 border-accent pr-3 py-2 bg-muted/30 rounded-l-radius leading-relaxed">
+                      <p className="text-xl font-mono text-right border-r-4 border-accent pr-3 py-2 bg-muted/30 rounded-l-radius leading-relaxed">
                         {activeAyah.text}
                       </p>
                     </div>
