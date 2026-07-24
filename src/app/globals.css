@@ -11,7 +11,7 @@
   --card-foreground: oklch(0.3729 0.0306 259.7328);
   --popover: oklch(1.0000 0 0);
   --popover-foreground: oklch(0.3729 0.0306 259.7328);
-  --primary: oklch(0.7227 0.1920 149.5793);
+  --primary: #0e4e46;
   --primary-foreground: oklch(1.0000 0 0);
   --secondary: oklch(0.9514 0.0250 236.8242);
   --secondary-foreground: oklch(0.4461 0.0263 256.8018);
@@ -39,7 +39,7 @@
   --sidebar-ring: oklch(0.7227 0.1920 149.5793);
   --font-sans: "Cairo", sans-serif;
   --font-serif: "Cairo", sans-serif;
-  --font-mono: IBM Plex Mono, monospace;
+  --font-mono: "Amiri", monospace;
   --radius: 0.5rem;
   --shadow-x: 0px;
   --shadow-y: 4px;

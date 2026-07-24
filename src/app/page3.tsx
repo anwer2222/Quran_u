@@ -251,7 +251,7 @@ export default function QuranSearchPage() {
                       className="w-full p-2 rounded-radius border border-input bg-popover text-popover-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                       <option value="">اختر السورة</option>
-                      <option value="2">البقرة (2)</option>
+                      <option value="2">لقمان (2)</option>
                       <option value="3">آل عمران (3)</option>
                     </select>
                   </div>

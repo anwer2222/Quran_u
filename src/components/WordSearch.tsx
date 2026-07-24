@@ -26,7 +26,7 @@ const MEDIA_TEXT_REGISTRY: Record<
       txtPath: "/001_hafas.txt",
     },
     2: {
-      surahName: "سورة البقرة",
+      surahName: "سورة لقمان",
       audioPath: "/audio/031_maher.mp3",
       srtPath: "/031_hafas.srt",
       txtPath: "/031_hafas.txt",
@@ -40,10 +40,10 @@ const MEDIA_TEXT_REGISTRY: Record<
       txtPath: "/001_warash.txt",
     },
     2: {
-      surahName: "سورة البقرة",
+      surahName: "سورة لقمان",
       audioPath: "/audio/031_baset.mp3",
       srtPath: "/031_warash.srt",
-      txtPath: "/031_warash.srt",
+      txtPath: "/031_warash.txt",
     },
   },
 };
@@ -161,7 +161,7 @@ export default function WordSearch({
           className="w-full p-2.5 rounded-radius border border-input bg-popover text-popover-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring font-serif mb-4"
         >
           <option value="1">سورة الفاتحة (1)</option>
-          <option value="2">سورة البقرة (2)</option>
+          <option value="2">سورة لقمان (2)</option>
         </select>
       </div>
 
@@ -227,7 +227,7 @@ export default function WordSearch({
                   <span className="text-xs font-mono font-bold text-primary">
                     الآية رقم [{item.ayahNumber}]
                   </span>
-                  <span className="text-base font-serif text-foreground w-full">
+                  <span className="text-base font-mono text-foreground w-full">
                     {item.text}
                   </span>
                 </button>

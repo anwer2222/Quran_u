@@ -24,7 +24,7 @@ const MEDIA_REGISTRY: Record<
       srtPath: "/001_hafas.srt",
     },
     2: {
-      surahName: "البقرة (2)",
+      surahName: "لقمان (2)",
       audioPath: "/audio/031_maher.mp3",
       srtPath: "/031_hafas.srt",
     },
@@ -36,7 +36,7 @@ const MEDIA_REGISTRY: Record<
       srtPath: "/001_warash.srt",
     },
     2: {
-      surahName: "البقرة (2)",
+      surahName: "لقمان (2)",
       audioPath: "/audio/031_baset.mp3",
       srtPath: "/031_warash.srt",
     },
@@ -125,7 +125,7 @@ export default function SurahAyahSearch({
             className="w-full p-2.5 rounded-radius border border-input bg-popover text-popover-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="1">سورة الفاتحة (1)</option>
-            <option value="2">سورة البقرة (2)</option>
+            <option value="2">سورة لقمان (2)</option>
           </select>
         </div>
 
