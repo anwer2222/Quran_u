@@ -134,7 +134,7 @@ export default function TajweedSearch({
           className="w-full p-2.5 rounded-radius border border-input bg-popover text-popover-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring font-serif"
         >
           <option value="1">سورة الفاتحة (1)</option>
-          <option value="2">سورة البقرة (2)</option>
+          <option value="2">سورة لقمان (2)</option>
         </select>
       </div>
 
