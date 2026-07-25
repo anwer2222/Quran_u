@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { parseSrt, AyahCue } from "@/components/srtParser";
 
 interface SurahAyahSearchProps {
-  selectedRecitation: "hafs" | "warsh";
+  selectedRecitation: "hafs" | "warsh" | "sosi";
   onAyahSelected: (
     audioSrc: string,
     startTime: number,
@@ -41,6 +41,18 @@ const MEDIA_REGISTRY: Record<
       srtPath: "/031_warash.srt",
     },
   },
+  sosi: {
+    1: {
+      surahName: "الفاتحة (1)",
+      audioPath: "/audio/001_rashed.mp3",
+      srtPath: "/001_rashed.srt",
+    },
+    2: {
+      surahName: "لقمان (2)",
+      audioPath: "/audio/031_rashed.mp3",
+      srtPath: "/031_rashed.srt",
+    },
+  }
 };
 
 
@@ -138,7 +150,7 @@ export default function SurahAyahSearch({
             value={selectedAyah}
             onChange={handleAyahChange}
             disabled={loadingSrt || ayahCues.length === 0}
-            className="w-full p-2.5 rounded-radius border border-input bg-popover text-popover-foreground text-sm disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-ring font-serif"
+            className="w-full p-2.5 rounded-radius border border-input bg-popover text-popover-foreground text-sm disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-ring font-mono"
           >
             <option value="">
               {loadingSrt

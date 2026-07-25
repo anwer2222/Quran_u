@@ -5,7 +5,7 @@ import { parseSrt, AyahCue } from "@/components/srtParser";
 import { stripTashkeel, extractMatchingWords } from "@/components/arabicUtils";
 
 interface WordSearchProps {
-  selectedRecitation: "hafs" | "warsh";
+  selectedRecitation: "hafs" | "warsh" | "sosi";
   onAyahSelected: (
     audioSrc: string,
     startTime: number,
@@ -46,6 +46,20 @@ const MEDIA_TEXT_REGISTRY: Record<
       txtPath: "/031_warash.txt",
     },
   },
+  sosi: {
+    1: {
+        surahName: "الفاتحة (1)",
+        audioPath: "/audio/001_rashed.mp3",
+        srtPath: "/001_rashed.srt",
+        txtPath: "/001_sosi.txt",
+      },
+    2: {
+        surahName: "لقمان (2)",
+        audioPath: "/audio/031_rashed.mp3",
+        srtPath: "/031_rashed.srt",
+        txtPath: "/031_sosi.txt",
+      },
+  }
 };
 
 export default function WordSearch({
@@ -191,7 +205,7 @@ export default function WordSearch({
               <button
                 key={`${word}_${idx}`}
                 onClick={() => setSelectedTashkeelWord(word)}
-                className={`px-3 py-1.5 rounded-radius text-lg font-serif border transition-all ${
+                className={`px-3 py-1.5 rounded-radius text-lg font-mono border transition-all ${
                   selectedTashkeelWord === word
                     ? "bg-accent text-accent-foreground border-accent shadow-sm"
                     : "bg-popover text-popover-foreground border-input hover:bg-accent/50"

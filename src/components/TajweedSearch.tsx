@@ -5,7 +5,7 @@ import { parseSrt, AyahCue } from "@/components/srtParser";
 import { parseEdghamCsv, EdghamRecord } from "@/components/csvParser";
 
 interface TajweedSearchProps {
-  selectedRecitation: "hafs" | "warsh";
+  selectedRecitation: "hafs" | "warsh" | "sosi";
   onAyahSelected: (
     audioSrc: string,
     startTime: number,
@@ -46,6 +46,20 @@ const TAJWEED_REGISTRY: Record<
       csvPath: "/031_edgham.csv",
     },
   },
+  sosi: {
+    1: {
+        surahName: "الفاتحة (1)",
+        audioPath: "/audio/001_rashed.mp3",
+        srtPath: "/001_rashed.srt",
+        csvPath: "/001_edgham.csv",
+      },
+      2: {
+        surahName: "لقمان (2)",
+        audioPath: "/audio/031_rashed.mp3",
+        srtPath: "/031_rashed.srt",
+        csvPath: "/031_edgham.csv",
+      },
+  }
 };
 
 export default function TajweedSearch({

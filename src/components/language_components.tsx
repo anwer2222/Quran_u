@@ -14,7 +14,7 @@ interface ActiveAyahMeta {
 
 export default function QuranSearchPage() {
   // 1. Global Recitation State
-  const [globalRecitation, setGlobalRecitation] = useState<"hafs" | "warsh">("hafs");
+  const [globalRecitation, setGlobalRecitation] = useState<"hafs" | "warsh" | "sosi">("hafs");
 
   // 2. Active Search Method Tab ("structure" | "word")
   const [searchMethod, setSearchMethod] = useState<"structure" | "word" | "tajweed">("structure");
@@ -81,13 +81,14 @@ export default function QuranSearchPage() {
             <select
               value={globalRecitation}
               onChange={(e) => {
-                setGlobalRecitation(e.target.value as "hafs" | "warsh");
+                setGlobalRecitation(e.target.value as "hafs" | "warsh" | "sosi");
                 setActiveAyah(null); // Reset current playhead on recitation switch
               }}
               className="p-1.5 text-xs rounded-radius border border-input bg-popover text-popover-foreground focus:outline-none focus:ring-2 focus:ring-ring font-medium font-serif"
             >
               <option value="hafs">حفص عن عاصم</option>
               <option value="warsh">ورش عن نافع</option>
+              <option value="sosi">السوسي عن أبي عمرو</option>
             </select>
           </div>
         </header>
@@ -217,7 +218,7 @@ export default function QuranSearchPage() {
                         التفسير والبيان
                       </h3>
                       <p className="text-sm leading-relaxed text-foreground/90 bg-popover p-3 rounded-radius border border-border">
-                        تفسير الآية رقم ({activeAyah.ayah}) من سورة ({activeAyah.surah}) برواية ({globalRecitation === "hafs" ? "حفص عن عاصم" : "ورش عن نافع"}).
+                        تفسير الآية رقم ({activeAyah.ayah}) من سورة ({activeAyah.surah}) برواية ({globalRecitation === "hafs" ? "حفص عن عاصم" : globalRecitation === "warsh"? "ورش عن نافع" : "السوسي عن أبي عمرو"}).
                       </p>
                     </div>
 
