@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { parseSrt, AyahCue } from "@/components/srtParser";
-import { stripTashkeel, extractMatchingWords } from "@/components/arabicUtils";
+import { stripTashkeel, extractMatchingWords, normalizeQuranicMarks } from "@/components/arabicUtils";
 
 interface WordSearchProps {
   selectedRecitation: "hafs" | "warsh" | "sosi";
@@ -211,7 +211,7 @@ export default function WordSearch({
                     : "bg-popover text-popover-foreground border-input hover:bg-accent/50"
                 }`}
               >
-                {word}
+                {normalizeQuranicMarks(word)}
               </button>
             ))}
           </div>
@@ -242,7 +242,7 @@ export default function WordSearch({
                     الآية رقم [{item.ayahNumber}]
                   </span>
                   <span className="text-base font-mono text-foreground w-full">
-                    {item.text}
+                    {normalizeQuranicMarks(item.text)}
                   </span>
                 </button>
               ))

@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import SurahAyahSearch from "@/components/SurahAyahSearch";
 import WordSearch from "@/components/WordSearch";
 import TajweedSearch from "./TajweedSearch";
+import { normalizeQuranicMarks } from "./arabicUtils";
 
 interface ActiveAyahMeta {
   surah: number;
@@ -208,7 +209,7 @@ export default function QuranSearchPage() {
                         سورة {activeAyah.surah} : الآية {activeAyah.ayah}
                       </span>
                       <p className="text-xl font-mono text-right border-r-4 border-accent pr-3 py-2 bg-muted/30 rounded-l-radius leading-relaxed">
-                        {activeAyah.text}
+                        {normalizeQuranicMarks(activeAyah.text)}
                       </p>
                     </div>
 

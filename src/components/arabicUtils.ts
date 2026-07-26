@@ -51,3 +51,13 @@ export function stripTashkeel(text: string): string {
   
     return Array.from(matchedSet);
   }
+
+export function normalizeQuranicMarks(text: string): string {
+    if (!text) return "";
+  
+    return text
+      // Replace Uthmani upright Damma Tanween (U+065E / U+08F1) with standard Tanween Damma (U+064C)
+      .replace(/[\u065E\u08F1]/g, "\u064C")
+      // Replace Wasla Alef 'ٱ' (U+0671) with standard Alef 'ا' if needed
+      .replace(/ٱ/g, "ا");
+  }

@@ -48,13 +48,13 @@ const TAJWEED_REGISTRY: Record<
   },
   sosi: {
     1: {
-        surahName: "الفاتحة (1)",
+        surahName: "الفاتحة",
         audioPath: "/audio/001_rashed.mp3",
         srtPath: "/001_rashed.srt",
         csvPath: "/001_edgham.csv",
       },
       2: {
-        surahName: "لقمان (2)",
+        surahName: "لقمان",
         audioPath: "/audio/031_rashed.mp3",
         srtPath: "/031_rashed.srt",
         csvPath: "/031_edgham.csv",
@@ -71,7 +71,7 @@ export default function TajweedSearch({
   const [ayahCues, setAyahCues] = useState<AyahCue[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Selected letter pair (e.g. "م - م")
+  // Active filters
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
 
   const currentSurahNum = parseInt(selectedSurah, 10);
@@ -79,7 +79,6 @@ export default function TajweedSearch({
     TAJWEED_REGISTRY[selectedRecitation]?.[currentSurahNum] ||
     TAJWEED_REGISTRY["hafs"][1];
 
-  // Fetch CSV and SRT files when Surah or Recitation changes
   useEffect(() => {
     async function loadResources() {
       setLoading(true);
@@ -106,25 +105,106 @@ export default function TajweedSearch({
     loadResources();
   }, [selectedRecitation, selectedSurah]);
 
-  // Extract unique letter pairs for selector buttons
-  const availablePairs = Array.from(
-    new Set(edghamRecords.map((r) => r.letterPair))
-  );
-
-  // Filter records matching the active pair
+  const availablePairs = Array.from(new Set(edghamRecords.map((r) => r.letterPair)));
   const activeMatches = selectedPair
     ? edghamRecords.filter((r) => r.letterPair === selectedPair)
     : [];
 
-  // Trigger jump to target audio timestamp
+  /**
+   * Helper to render full Ayah text from SRT with highlighted Edgham words
+   */
+  const renderHighlightedAyahText = (record: EdghamRecord) => {
+    // Single Ayah occurrence
+    if (!record.secondAyahNumber) {
+      const cue = ayahCues.find((c) => c.ayahNumber === record.startAyahNumber);
+      if (!cue) return record.snippetText;
+
+      const words = cue.text.split(/\s+/);
+      const [idx1, idx2] = record.wordLocations;
+
+      return (
+        <span className="leading-loose">
+          {words.map((word, wIdx) => {
+            const isHighlighted = wIdx === idx1 || wIdx === idx2;
+            return (
+              <React.Fragment key={wIdx}>
+                <span
+                  className={
+                    isHighlighted
+                      ? "bg-amber-300 text-amber-950 font-bold px-1 py-0.5 rounded-sm border border-amber-400"
+                      : ""
+                  }
+                >
+                  {word}
+                </span>{" "}
+              </React.Fragment>
+            );
+          })}
+        </span>
+      );
+    }
+
+    // Cross-Ayah occurrence (Location "0 - 0" -> last word of Ayah 1 & first word of Ayah 2)
+    const cue1 = ayahCues.find((c) => c.ayahNumber === record.startAyahNumber);
+    const cue2 = ayahCues.find((c) => c.ayahNumber === record.secondAyahNumber);
+
+    if (!cue1 || !cue2) return record.snippetText;
+
+    const words1 = cue1.text.split(/\s+/);
+    const words2 = cue2.text.split(/\s+/);
+
+    return (
+      <span className="leading-loose">
+        {/* Render Ayah 1 */}
+        {words1.map((word, wIdx) => {
+          const isHighlighted = wIdx === words1.length - 1; // Last word of Ayah 1
+          return (
+            <React.Fragment key={`a1_${wIdx}`}>
+              <span
+                className={
+                  isHighlighted
+                    ? "bg-amber-300 text-amber-950 font-bold px-1 py-0.5 rounded-sm border border-amber-400"
+                    : ""
+                }
+              >
+                {word}
+              </span>{" "}
+            </React.Fragment>
+          );
+        })}
+        <span className="text-xs font-mono text-primary font-bold px-1">
+          ([{record.startAyahNumber}])
+        </span>{" "}
+        {/* Render Ayah 2 */}
+        {words2.map((word, wIdx) => {
+          const isHighlighted = wIdx === 0; // First word of Ayah 2
+          return (
+            <React.Fragment key={`a2_${wIdx}`}>
+              <span
+                className={
+                  isHighlighted
+                    ? "bg-amber-300 text-amber-950 font-bold px-1 py-0.5 rounded-sm border border-amber-400"
+                    : ""
+                }
+              >
+                {word}
+              </span>{" "}
+            </React.Fragment>
+          );
+        })}
+      </span>
+    );
+  };
+
   const handleRecordClick = (record: EdghamRecord) => {
     const cue = ayahCues.find((c) => c.ayahNumber === record.startAyahNumber);
     const startTime = cue ? cue.start : 0;
+    const fullText = cue ? cue.text : record.snippetText;
 
     onAyahSelected(currentRegistry.audioPath, startTime, {
       surah: currentSurahNum,
       ayah: record.startAyahNumber,
-      text: record.textSnippet,
+      text: fullText,
     });
   };
 
@@ -137,7 +217,7 @@ export default function TajweedSearch({
         طريقة البحث الثالثة: أحكام التجويد (الإدغام)
       </h3>
 
-      {/* Surah Scope Selection */}
+      {/* Surah Selection */}
       <div>
         <label className="block text-xs font-medium text-muted-foreground mb-1">
           نطاق البحث (السورة)
@@ -155,11 +235,11 @@ export default function TajweedSearch({
       {/* Letter Pairs Selector */}
       <div className="space-y-2">
         <label className="block text-xs font-medium text-muted-foreground">
-          اختر علاقة الأحرف (توالي الإدغام):
+          اختر الحرفين (توالي الإدغام):
         </label>
 
         {loading ? (
-          <p className="text-xs text-muted-foreground">جاري تحميل حالات الإدغام...</p>
+          <p className="text-xs text-muted-foreground">جاري تحميل بيانات التجويد...</p>
         ) : availablePairs.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {availablePairs.map((pair) => (
@@ -178,7 +258,7 @@ export default function TajweedSearch({
           </div>
         ) : (
           <p className="text-xs text-muted-foreground">
-            لا توجد بيانات إدغام مسجلة لهذه السورة.
+            لا توجد مواضع إدغام مجهزة لهذه السورة.
           </p>
         )}
       </div>
@@ -194,15 +274,25 @@ export default function TajweedSearch({
               <button
                 key={`${record.startAyahNumber}_${index}`}
                 onClick={() => handleRecordClick(record)}
-                className="w-full p-3 text-right rounded-radius border bg-popover text-popover-foreground border-border hover:bg-accent/20 transition-colors flex flex-col gap-1 items-start"
+                className="w-full p-3 text-right rounded-radius border bg-popover text-popover-foreground border-border hover:bg-accent/20 transition-colors flex flex-col gap-2 items-start"
               >
-                <div className="w-full flex justify-between items-center text-xs font-mono font-bold text-primary">
-                  <span>الآية/الآيات: [{record.ayahNumberRange}]</span>
-                  <span className="text-muted-foreground">صفحة المصحف: {record.pageNumber}</span>
+                {/* Metadata Badges */}
+                <div className="w-full flex justify-between items-center text-xs font-mono font-bold">
+                  <div className="flex items-center gap-2">
+                    <span className="text-primary">الآية: [{record.ayahNumberRange}]</span>
+                    <span className="bg-secondary text-secondary-foreground px-2 py-0.5 rounded-radius text-[10px]">
+                      {record.type}
+                    </span>
+                  </div>
+                  <span className="text-muted-foreground font-sans">
+                    مرجع الشرح: صـ {record.refPageNumber}
+                  </span>
                 </div>
-                <span className="text-base font-serif text-foreground w-full">
-                  {record.textSnippet}
-                </span>
+
+                {/* Full Ayah from SRT with Colored Edgham */}
+                <div className="text-base font-mono text-foreground w-full">
+                  {renderHighlightedAyahText(record)}
+                </div>
               </button>
             ))}
           </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { parseSrt, AyahCue } from "@/components/srtParser";
+import { normalizeQuranicMarks } from "./arabicUtils";
 
 interface SurahAyahSearchProps {
   selectedRecitation: "hafs" | "warsh" | "sosi";
@@ -161,7 +162,7 @@ export default function SurahAyahSearch({
               const previewWords = getFirstFourWords(cue.text);
               return (
                 <option key={cue.ayahNumber} value={cue.ayahNumber}>
-                  {previewWords} ... [{cue.ayahNumber}]
+                  {normalizeQuranicMarks(previewWords)} ... [{cue.ayahNumber}]
                 </option>
               );
             })}
