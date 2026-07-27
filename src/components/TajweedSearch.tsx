@@ -4,14 +4,15 @@ import React, { useState, useEffect } from "react";
 import { parseSrt, AyahCue } from "@/components/srtParser";
 import { parseEdghamCsv, EdghamRecord } from "@/components/csvParser";
 
-interface TajweedSearchProps {
-  selectedRecitation: "hafs" | "warsh" | "sosi";
-  onAyahSelected: (
-    audioSrc: string,
-    startTime: number,
-    ayahMeta: { surah: number; ayah: number; text: string }
-  ) => void;
-}
+
+// interface TajweedSearchProps {
+//   selectedRecitation: "hafs" | "warsh" | "sosi";
+//   onAyahSelected: (
+//     audioSrc: string,
+//     startTime: number,
+//     ayahMeta: { surah: number; ayah: number; text: string }
+//   ) => void;
+// }
 
 // Media, SRT, and CSV file registry
 const TAJWEED_REGISTRY: Record<
@@ -36,13 +37,13 @@ const TAJWEED_REGISTRY: Record<
     1: {
       surahName: "سورة الفاتحة",
       audioPath: "/audio/001_baset.mp3",
-      srtPath: "/001_warash.srt",
+      srtPath: "/001_warsh.srt",
       csvPath: "/001_edgham.csv",
     },
     2: {
       surahName: "سورة لقمان",
       audioPath: "/audio/031_baset.mp3",
-      srtPath: "/031_warash.srt",
+      srtPath: "/031_warsh.srt",
       csvPath: "/031_edgham.csv",
     },
   },
@@ -62,68 +63,130 @@ const TAJWEED_REGISTRY: Record<
   }
 };
 
+interface TajweedSearchProps {
+  selectedRecitation: "hafs" | "warsh" | "sosi";
+  onAyahSelected: (
+    audioSrc: string,
+    startTime: number,
+    ayahMeta: { surah: number; ayah: number; text: string }
+  ) => void;
+}
+
+// Available Surahs for scope filtering
+const AVAILABLE_SURAHS = [
+  { id: "all", name: "القرآن كاملاً" },
+  { id: "1", name: "سورة الفاتحة (1)" },
+  { id: "2", name: "سورة لقمان (2)" },
+];
+
 export default function TajweedSearch({
   selectedRecitation,
   onAyahSelected,
 }: TajweedSearchProps) {
-  const [selectedSurah, setSelectedSurah] = useState<string>("1");
-  const [edghamRecords, setEdghamRecords] = useState<EdghamRecord[]>([]);
-  const [ayahCues, setAyahCues] = useState<AyahCue[]>([]);
+  // Scope selection (Defaults to "all" for global Quran search)
+  const [selectedSurahScope, setSelectedSurahScope] = useState<string>("all");
+
+  // Global Datasets
+  const [globalEdghamRecords, setGlobalEdghamRecords] = useState<EdghamRecord[]>([]);
+  const [srtCache, setSrtCache] = useState<Record<number, AyahCue[]>>({});
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Active filters
+  // Selected letter pair filter (e.g., "م - م")
   const [selectedPair, setSelectedPair] = useState<string | null>(null);
 
-  const currentSurahNum = parseInt(selectedSurah, 10);
-  const currentRegistry =
-    TAJWEED_REGISTRY[selectedRecitation]?.[currentSurahNum] ||
-    TAJWEED_REGISTRY["hafs"][1];
-
+  // 1. Fetch the unified global CSV dataset when recitation changes
   useEffect(() => {
-    async function loadResources() {
+    async function loadGlobalEdghamData() {
       setLoading(true);
       setSelectedPair(null);
 
       try {
-        const [csvRes, srtRes] = await Promise.all([
-          fetch(currentRegistry.csvPath),
-          fetch(currentRegistry.srtPath),
-        ]);
+        const csvPath = `/edgham.csv`; // ${selectedRecitation}_
+        const res = await fetch(csvPath);
+        const csvText = await res.text();
+        const parsedRecords = parseEdghamCsv(csvText);
 
-        const csvText = await csvRes.text();
-        const srtText = await srtRes.text();
-
-        setEdghamRecords(parseEdghamCsv(csvText));
-        setAyahCues(parseSrt(srtText));
+        setGlobalEdghamRecords(parsedRecords);
       } catch (err) {
-        console.error("خطأ أثناء تحميل ملفات التجويد والتوقيت:", err);
+        console.error("خطأ أثناء تحميل قاعدة بيانات التجويد الكلية:", err);
       } finally {
         setLoading(false);
       }
     }
 
-    loadResources();
-  }, [selectedRecitation, selectedSurah]);
+    loadGlobalEdghamData();
+  }, [selectedRecitation]);
 
-  const availablePairs = Array.from(new Set(edghamRecords.map((r) => r.letterPair)));
+  // 2. Filter active scope (All Surahs vs. Single Selected Surah)
+  const activeScopeRecords =
+    selectedSurahScope === "all"
+      ? globalEdghamRecords
+      : globalEdghamRecords.filter(
+          (r) => r.surahNumber === parseInt(selectedSurahScope, 10)
+        );
+
+  // Extract unique letter pairs available in current scope
+  const availablePairs = Array.from(
+    new Set(activeScopeRecords.map((r) => r.letterPair))
+  );
+
+  // Active matching records for selected letter pair
   const activeMatches = selectedPair
-    ? edghamRecords.filter((r) => r.letterPair === selectedPair)
+    ? activeScopeRecords.filter((r) => r.letterPair === selectedPair)
     : [];
 
+  // 3. Helper to load and cache SRT timestamps dynamically per Surah
+  const getOrFetchSrtCues = async (surahNum: number): Promise<AyahCue[]> => {
+    if (srtCache[surahNum]) {
+      return srtCache[surahNum];
+    }
+
+    try {
+      const srtPath = `/${surahNum===1?"001":"031"}_${selectedRecitation}.srt`;
+      const res = await fetch(srtPath);
+      const srtText = await res.text();
+      const parsed = parseSrt(srtText);
+
+      setSrtCache((prev) => ({ ...prev, [surahNum]: parsed }));
+      return parsed;
+    } catch (err) {
+      console.error(`خطأ أثناء تحميل ملف SRT للسورة ${surahNum}:`, err);
+      return [];
+    }
+  };
+
+  // 4. Handle clicking on an Edgham result
+  const handleRecordClick = async (record: EdghamRecord) => {
+    const audioPath = `/audio/${record.surahNumber===1?"001":"031"}_${selectedRecitation}.mp3`;
+    const cues = await getOrFetchSrtCues(record.surahNumber);
+    const cue = cues.find((c) => c.ayahNumber === record.startAyahNumber);
+
+    const startTime = cue ? cue.start : 0;
+    const fullText = cue ? cue.text : record.snippetText;
+
+    onAyahSelected(audioPath, startTime, {
+      surah: record.surahNumber,
+      ayah: record.startAyahNumber,
+      text: fullText,
+    });
+  };
+
   /**
-   * Helper to render full Ayah text from SRT with highlighted Edgham words
+   * Helper to render full Ayah text from cached SRT with highlighted Edgham words
    */
   const renderHighlightedAyahText = (record: EdghamRecord) => {
+    const currentCues = srtCache[record.surahNumber] || [];
+
     // Single Ayah occurrence
     if (!record.secondAyahNumber) {
-      const cue = ayahCues.find((c) => c.ayahNumber === record.startAyahNumber);
+      const cue = currentCues.find((c) => c.ayahNumber === record.startAyahNumber);
       if (!cue) return record.snippetText;
 
       const words = cue.text.split(/\s+/);
       const [idx1, idx2] = record.wordLocations;
 
       return (
-        <span className="leading-loose">
+        <span className="leading-loose font-mono">
           {words.map((word, wIdx) => {
             const isHighlighted = wIdx === idx1 || wIdx === idx2;
             return (
@@ -145,8 +208,8 @@ export default function TajweedSearch({
     }
 
     // Cross-Ayah occurrence (Location "0 - 0" -> last word of Ayah 1 & first word of Ayah 2)
-    const cue1 = ayahCues.find((c) => c.ayahNumber === record.startAyahNumber);
-    const cue2 = ayahCues.find((c) => c.ayahNumber === record.secondAyahNumber);
+    const cue1 = currentCues.find((c) => c.ayahNumber === record.startAyahNumber);
+    const cue2 = currentCues.find((c) => c.ayahNumber === record.secondAyahNumber);
 
     if (!cue1 || !cue2) return record.snippetText;
 
@@ -154,10 +217,10 @@ export default function TajweedSearch({
     const words2 = cue2.text.split(/\s+/);
 
     return (
-      <span className="leading-loose">
-        {/* Render Ayah 1 */}
+      <span className="leading-loose font-mono">
+        {/* Ayah 1 */}
         {words1.map((word, wIdx) => {
-          const isHighlighted = wIdx === words1.length - 1; // Last word of Ayah 1
+          const isHighlighted = wIdx === words1.length - 1;
           return (
             <React.Fragment key={`a1_${wIdx}`}>
               <span
@@ -175,9 +238,9 @@ export default function TajweedSearch({
         <span className="text-xs font-mono text-primary font-bold px-1">
           ([{record.startAyahNumber}])
         </span>{" "}
-        {/* Render Ayah 2 */}
+        {/* Ayah 2 */}
         {words2.map((word, wIdx) => {
-          const isHighlighted = wIdx === 0; // First word of Ayah 2
+          const isHighlighted = wIdx === 0;
           return (
             <React.Fragment key={`a2_${wIdx}`}>
               <span
@@ -196,39 +259,33 @@ export default function TajweedSearch({
     );
   };
 
-  const handleRecordClick = (record: EdghamRecord) => {
-    const cue = ayahCues.find((c) => c.ayahNumber === record.startAyahNumber);
-    const startTime = cue ? cue.start : 0;
-    const fullText = cue ? cue.text : record.snippetText;
-
-    onAyahSelected(currentRegistry.audioPath, startTime, {
-      surah: currentSurahNum,
-      ayah: record.startAyahNumber,
-      text: fullText,
-    });
-  };
-
   return (
     <div
       className="bg-card text-card-foreground p-6 rounded-radius border border-border shadow-md space-y-4"
       dir="rtl"
     >
       <h3 className="text-base font-bold font-serif text-primary border-b border-border pb-2">
-        طريقة البحث الثالثة: أحكام التجويد (الإدغام)
+        طريقة البحث الثالثة: أحكام التجويد (البحث الشامل)
       </h3>
 
-      {/* Surah Selection */}
+      {/* Scope Selector */}
       <div>
         <label className="block text-xs font-medium text-muted-foreground mb-1">
-          نطاق البحث (السورة)
+          نطاق البحث
         </label>
         <select
-          value={selectedSurah}
-          onChange={(e) => setSelectedSurah(e.target.value)}
+          value={selectedSurahScope}
+          onChange={(e) => {
+            setSelectedSurahScope(e.target.value);
+            setSelectedPair(null);
+          }}
           className="w-full p-2.5 rounded-radius border border-input bg-popover text-popover-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring font-serif"
         >
-          <option value="1">سورة الفاتحة (1)</option>
-          <option value="2">سورة لقمان (2)</option>
+          {AVAILABLE_SURAHS.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -239,13 +296,20 @@ export default function TajweedSearch({
         </label>
 
         {loading ? (
-          <p className="text-xs text-muted-foreground">جاري تحميل بيانات التجويد...</p>
+          <p className="text-xs text-muted-foreground">جاري تحميل بيانات التجويد الشاملة...</p>
         ) : availablePairs.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {availablePairs.map((pair) => (
               <button
                 key={pair}
-                onClick={() => setSelectedPair(pair)}
+                onClick={async () => {
+                  setSelectedPair(pair);
+                  // Pre-fetch SRT cues for all matching records to enable instant text highlighting
+                  const matches = activeScopeRecords.filter((r) => r.letterPair === pair);
+                  for (const match of matches) {
+                    await getOrFetchSrtCues(match.surahNumber);
+                  }
+                }}
                 className={`px-4 py-2 rounded-radius text-sm font-bold font-mono border transition-all ${
                   selectedPair === pair
                     ? "bg-accent text-accent-foreground border-accent shadow"
@@ -258,7 +322,7 @@ export default function TajweedSearch({
           </div>
         ) : (
           <p className="text-xs text-muted-foreground">
-            لا توجد مواضع إدغام مجهزة لهذه السورة.
+            لا توجد مواضع إدغام مسجلة لهذا النطاق.
           </p>
         )}
       </div>
@@ -266,20 +330,26 @@ export default function TajweedSearch({
       {/* Match Results Listing */}
       {selectedPair && (
         <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">
-            مواضع الإدغام للحرفين ({selectedPair}):
-          </p>
-          <div className="max-h-60 overflow-y-auto space-y-2 pl-1">
+          <div className="flex justify-between items-center text-xs font-medium text-muted-foreground">
+            <span>مواضع الإدغام للحرفين ({selectedPair}):</span>
+            <span className="font-mono text-primary font-bold">
+              عدد المواضع: {activeMatches.length}
+            </span>
+          </div>
+
+          <div className="max-h-64 overflow-y-auto space-y-2 pl-1">
             {activeMatches.map((record, index) => (
               <button
-                key={`${record.startAyahNumber}_${index}`}
+                key={`${record.surahNumber}_${record.startAyahNumber}_${index}`}
                 onClick={() => handleRecordClick(record)}
                 className="w-full p-3 text-right rounded-radius border bg-popover text-popover-foreground border-border hover:bg-accent/20 transition-colors flex flex-col gap-2 items-start"
               >
                 {/* Metadata Badges */}
                 <div className="w-full flex justify-between items-center text-xs font-mono font-bold">
                   <div className="flex items-center gap-2">
-                    <span className="text-primary">الآية: [{record.ayahNumberRange}]</span>
+                    <span className="text-primary">
+                      سورة [{record.surahNumber}] - الآية: [{record.ayahNumberRange}]
+                    </span>
                     <span className="bg-secondary text-secondary-foreground px-2 py-0.5 rounded-radius text-[10px]">
                       {record.type}
                     </span>
@@ -290,7 +360,7 @@ export default function TajweedSearch({
                 </div>
 
                 {/* Full Ayah from SRT with Colored Edgham */}
-                <div className="text-base font-mono text-foreground w-full">
+                <div className="text-base font-mono text-foreground w-full leading-relaxed">
                   {renderHighlightedAyahText(record)}
                 </div>
               </button>

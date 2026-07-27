@@ -21,37 +21,37 @@ const MEDIA_REGISTRY: Record<
   hafs: {
     1: {
       surahName: "الفاتحة (1)",
-      audioPath: "/audio/001_maher.mp3",
-      srtPath: "/001_hafas.srt",
+      audioPath: "/audio/001_hafs.mp3",
+      srtPath: "/001_hafs.srt",
     },
     2: {
       surahName: "لقمان (2)",
-      audioPath: "/audio/031_maher.mp3",
-      srtPath: "/031_hafas.srt",
+      audioPath: "/audio/031_hafs.mp3",
+      srtPath: "/031_hafs.srt",
     },
   },
   warsh: {
     1: {
       surahName: "الفاتحة (1)",
-      audioPath: "/audio/001_baset.mp3",
-      srtPath: "/001_warash.srt",
+      audioPath: "/audio/001_warsh.mp3",
+      srtPath: "/001_warsh.srt",
     },
     2: {
       surahName: "لقمان (2)",
-      audioPath: "/audio/031_baset.mp3",
-      srtPath: "/031_warash.srt",
+      audioPath: "/audio/031_warsh.mp3",
+      srtPath: "/031_warsh.srt",
     },
   },
   sosi: {
     1: {
       surahName: "الفاتحة (1)",
-      audioPath: "/audio/001_rashed.mp3",
-      srtPath: "/001_rashed.srt",
+      audioPath: "/audio/001_sosi.mp3",
+      srtPath: "/001_sosi.srt",
     },
     2: {
       surahName: "لقمان (2)",
-      audioPath: "/audio/031_rashed.mp3",
-      srtPath: "/031_rashed.srt",
+      audioPath: "/audio/031_sosi.mp3",
+      srtPath: "/031_sosi.srt",
     },
   }
 };

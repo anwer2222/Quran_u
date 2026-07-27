@@ -13,146 +13,123 @@ interface WordSearchProps {
   ) => void;
 }
 
-// Media and Text registry for the 4 combinations
-const MEDIA_TEXT_REGISTRY: Record<
-  string,
-  Record<number, { audioPath: string; srtPath: string; txtPath: string; surahName: string }>
-> = {
-  hafs: {
-    1: {
-      surahName: "سورة الفاتحة",
-      audioPath: "/audio/001_maher.mp3",
-      srtPath: "/001_hafas.srt",
-      txtPath: "/001_hafas.txt",
-    },
-    2: {
-      surahName: "سورة لقمان",
-      audioPath: "/audio/031_maher.mp3",
-      srtPath: "/031_hafas.srt",
-      txtPath: "/031_hafas.txt",
-    },
-  },
-  warsh: {
-    1: {
-      surahName: "سورة الفاتحة",
-      audioPath: "/audio/001_baset.mp3",
-      srtPath: "/001_warash.srt",
-      txtPath: "/001_warash.txt",
-    },
-    2: {
-      surahName: "سورة لقمان",
-      audioPath: "/audio/031_baset.mp3",
-      srtPath: "/031_warash.srt",
-      txtPath: "/031_warash.txt",
-    },
-  },
-  sosi: {
-    1: {
-        surahName: "الفاتحة (1)",
-        audioPath: "/audio/001_rashed.mp3",
-        srtPath: "/001_rashed.srt",
-        txtPath: "/001_sosi.txt",
-      },
-    2: {
-        surahName: "لقمان (2)",
-        audioPath: "/audio/031_rashed.mp3",
-        srtPath: "/031_rashed.srt",
-        txtPath: "/031_sosi.txt",
-      },
-  }
-};
+interface QuranAyahRecord {
+  surah: number;
+  ayah: number;
+  text: string;
+}
+
+const AVAILABLE_SURAHS = [
+  { id: "all", name: "القرآن كاملاً" },
+  { id: "1", name: "سورة الفاتحة (1)" },
+  { id: "2", name: "سورة لقمان (2)" },
+];
 
 export default function WordSearch({
   selectedRecitation,
   onAyahSelected,
 }: WordSearchProps) {
-  const [selectedSurah, setSelectedSurah] = useState<string>("1");
+  const [selectedSurahScope, setSelectedSurahScope] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  
-  // Data state
-  const [txtLines, setTxtLines] = useState<string[]>([]);
-  const [ayahCues, setAyahCues] = useState<AyahCue[]>([]);
+
+  const [quranData, setQuranData] = useState<QuranAyahRecord[]>([]);
+  // Stores pre-loaded SRT cues keyed by Surah number
+  const [srtDataStore, setSrtDataStore] = useState<Record<number, AyahCue[]>>({});
   const [loadingData, setLoadingData] = useState<boolean>(false);
 
-  // Selection state
   const [suggestedWords, setSuggestedWords] = useState<string[]>([]);
   const [selectedTashkeelWord, setSelectedTashkeelWord] = useState<string | null>(null);
 
-  const currentSurahNum = parseInt(selectedSurah, 10);
-  const currentRegistry =
-    MEDIA_TEXT_REGISTRY[selectedRecitation]?.[currentSurahNum] ||
-    MEDIA_TEXT_REGISTRY["hafs"][1];
-
-  // Load both .txt and .srt files when Surah or Recitation changes
+  // Pre-load Quran JSON and SRT timing files together
   useEffect(() => {
-    async function loadResources() {
+    async function loadAllResources() {
       setLoadingData(true);
       setSelectedTashkeelWord(null);
       setSearchQuery("");
+      setSuggestedWords([]);
 
       try {
-        const [txtRes, srtRes] = await Promise.all([
-          fetch(currentRegistry.txtPath),
-          fetch(currentRegistry.srtPath),
-        ]);
+        // 1. Fetch full Quran text
+        const textRes = await fetch(`/full_${selectedRecitation}.json`);
+        const textData: QuranAyahRecord[] = await textRes.json();
 
-        const txtRaw = await txtRes.text();
-        const srtRaw = await srtRes.text();
+        const normalizedData = textData.map((item) => ({
+          ...item,
+          text: normalizeQuranicMarks(item.text),
+        }));
+        setQuranData(normalizedData);
 
-        // Split .txt file by line (each line is one Ayah)
-        const lines = txtRaw
-          .replace(/\r\n/g, "\n")
-          .split("\n")
-          .filter((line) => line.trim().length > 0);
+        // 2. Pre-fetch SRT files for Surahs 1 and 2 in advance
+        const surahIds = [1, 2];
+        const loadedSrtStore: Record<number, AyahCue[]> = {};
 
-        setTxtLines(lines);
-        setAyahCues(parseSrt(srtRaw));
+        await Promise.all(
+          surahIds.map(async (sId) => {
+            try {
+              const res = await fetch(`/${sId===1?"001":"031"}_${selectedRecitation}.srt`);
+              const srtText = await res.text();
+              loadedSrtStore[sId] = parseSrt(srtText);
+            } catch (e) {
+              console.error(`Could not pre-load SRT for Surah ${sId}:`, e);
+            }
+          })
+        );
+
+        setSrtDataStore(loadedSrtStore);
       } catch (err) {
-        console.error("خطأ أثناء تحميل ملفات النص والتوقيت:", err);
+        console.error("Error loading resources for WordSearch:", err);
       } finally {
         setLoadingData(false);
       }
     }
 
-    loadResources();
-  }, [selectedRecitation, selectedSurah]);
+    loadAllResources();
+  }, [selectedRecitation]);
 
-  // Handle typing search query
+  const activeScopeAyahs =
+    selectedSurahScope === "all"
+      ? quranData
+      : quranData.filter((item) => Number(item.surah) === Number(selectedSurahScope));
+
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
     setSelectedTashkeelWord(null);
 
     if (query.trim()) {
-      const matches = extractMatchingWords(txtLines, query);
+      const textLines = activeScopeAyahs.map((a) => a.text);
+      const matches = extractMatchingWords(textLines, query);
       setSuggestedWords(matches);
     } else {
       setSuggestedWords([]);
     }
   };
 
-  // Find all Ayahs containing the selected Tashkeel word
-  const getMatchingAyahsForWord = (tashkeelWord: string) => {
-    const matchedAyahs: { ayahNumber: number; text: string; start: number }[] = [];
+  // Synchronous, rock-solid click handler
+  const handleAyahResultClick = (item: QuranAyahRecord) => {
+    const surahNum = Number(item.surah);
+    const ayahNum = Number(item.ayah);
 
-    txtLines.forEach((lineText, index) => {
-      if (lineText.includes(tashkeelWord)) {
-        const ayahNum = index + 1; // Ayahs are 1-indexed line by line
-        const cue = ayahCues.find((c) => c.ayahNumber === ayahNum);
+    const audioPath = `/audio/${surahNum===1?"001":"031"}_${selectedRecitation}.mp3`;
+    const surahCues = srtDataStore[surahNum] || [];
 
-        matchedAyahs.push({
-          ayahNumber: ayahNum,
-          text: lineText,
-          start: cue ? cue.start : 0,
-        });
-      }
+    // Safe matching with type coercion
+    const cue = surahCues.find((c) => Number(c.ayahNumber) === ayahNum);
+
+    if (!cue) {
+      console.warn(`Timestamp not found for Surah ${surahNum}, Ayah ${ayahNum}`);
+      return;
+    }
+
+    onAyahSelected(audioPath, cue.start, {
+      surah: surahNum,
+      ayah: ayahNum,
+      text: item.text,
     });
-
-    return matchedAyahs;
   };
 
   const matchingAyahs = selectedTashkeelWord
-    ? getMatchingAyahsForWord(selectedTashkeelWord)
+    ? activeScopeAyahs.filter((item) => item.text.includes(selectedTashkeelWord))
     : [];
 
   return (
@@ -161,44 +138,48 @@ export default function WordSearch({
       dir="rtl"
     >
       <h3 className="text-base font-bold font-serif text-primary border-b border-border pb-2">
-        طريقة البحث الثانية: البحث بالكلمة والتشكيل
+        طريقة البحث الثانية: البحث بالكلمة والتشكيل (البحث الشامل)
       </h3>
 
-      {/* Surah Scope Selection */}
       <div>
         <label className="block text-xs font-medium text-muted-foreground mb-1">
-          نطاق البحث (السورة)
+          نطاق البحث
         </label>
         <select
-          value={selectedSurah}
-          onChange={(e) => setSelectedSurah(e.target.value)}
-          className="w-full p-2.5 rounded-radius border border-input bg-popover text-popover-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring font-serif mb-4"
+          value={selectedSurahScope}
+          onChange={(e) => {
+            setSelectedSurahScope(e.target.value);
+            setSelectedTashkeelWord(null);
+            setSuggestedWords([]);
+          }}
+          className="w-full p-2.5 rounded-radius border border-input bg-popover text-popover-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring font-serif"
         >
-          <option value="1">سورة الفاتحة (1)</option>
-          <option value="2">سورة لقمان (2)</option>
+          {AVAILABLE_SURAHS.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
         </select>
       </div>
 
-      {/* Search Input Box */}
       <div>
         <label className="block text-xs font-medium text-muted-foreground mb-1">
-          أدخل الكلمة القرآنية (بدون تشكيل أو بتشكيل جزئي)
+          أدخل الكلمة القرآنية للبحث (بدون تشكيل أو بتشكيل جزئي)
         </label>
         <input
           type="text"
           value={searchQuery}
           onChange={handleQueryChange}
           disabled={loadingData}
-          placeholder="مثال: الحمد، عليم، قالوا..."
+          placeholder="مثال: الناس، الصراط، رحيم، قالوا..."
           className="w-full p-3 font-serif rounded-radius border border-input bg-popover text-popover-foreground text-right focus:outline-none focus:ring-2 focus:ring-ring text-base"
         />
       </div>
 
-      {/* Step 1: Display matched word variants with Tashkeel */}
       {suggestedWords.length > 0 && (
         <div className="p-3 bg-muted rounded-radius border border-border space-y-2">
           <p className="text-xs font-medium text-muted-foreground">
-            اختر اللفظ المطلوب بالتشكيل الدقيق:
+            اختر اللفظ بالتشكيل الدقيق المقترن بالمصحف:
           </p>
           <div className="flex flex-wrap gap-2">
             {suggestedWords.map((word, idx) => (
@@ -211,43 +192,43 @@ export default function WordSearch({
                     : "bg-popover text-popover-foreground border-input hover:bg-accent/50"
                 }`}
               >
-                {normalizeQuranicMarks(word)}
+                {word}
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* Step 2: Render all Ayahs containing the selected Tashkeel word */}
       {selectedTashkeelWord && (
         <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">
-            الآيات التي تحتوي الكلمة ({selectedTashkeelWord}):
-          </p>
-          <div className="max-h-60 overflow-y-auto space-y-2 pl-1">
+          <div className="flex justify-between items-center text-xs font-medium text-muted-foreground">
+            <span>الآيات التي تحتوي اللفظ ({selectedTashkeelWord}):</span>
+            <span className="font-mono text-primary font-bold">
+              عدد النتائج: {matchingAyahs.length}
+            </span>
+          </div>
+
+          <div className="max-h-64 overflow-y-auto space-y-2 pl-1">
             {matchingAyahs.length > 0 ? (
               matchingAyahs.map((item) => (
                 <button
-                  key={item.ayahNumber}
-                  onClick={() =>
-                    onAyahSelected(currentRegistry.audioPath, item.start, {
-                      surah: currentSurahNum,
-                      ayah: item.ayahNumber,
-                      text: item.text,
-                    })
-                  }
+                  key={`${item.surah}_${item.ayah}`}
+                  onClick={() => handleAyahResultClick(item)}
                   className="w-full p-3 text-right rounded-radius border bg-popover text-popover-foreground border-border hover:bg-accent/20 transition-colors flex flex-col items-start gap-1"
                 >
-                  <span className="text-xs font-mono font-bold text-primary">
-                    الآية رقم [{item.ayahNumber}]
-                  </span>
-                  <span className="text-base font-mono text-foreground w-full">
-                    {normalizeQuranicMarks(item.text)}
+                  <div className="w-full flex justify-between items-center text-xs font-mono font-bold text-primary">
+                    <span>سورة رقم [{item.surah}]</span>
+                    <span>الآية رقم [{item.ayah}]</span>
+                  </div>
+                  <span className="text-base font-mono text-foreground w-full leading-relaxed">
+                    {item.text}
                   </span>
                 </button>
               ))
             ) : (
-              <p className="text-xs text-muted-foreground">لا توجد نتائج مطابقة.</p>
+              <p className="text-xs text-muted-foreground p-2 text-center">
+                لا توجد نتائج مطابقة لهذا اللفظ في النطاق المحدد.
+              </p>
             )}
           </div>
         </div>

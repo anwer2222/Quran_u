@@ -5,6 +5,7 @@ import SurahAyahSearch from "@/components/SurahAyahSearch";
 import WordSearch from "@/components/WordSearch";
 import TajweedSearch from "./TajweedSearch";
 import { normalizeQuranicMarks } from "./arabicUtils";
+import { playAudioSegment } from "./audioHandler";
 
 interface ActiveAyahMeta {
   surah: number;
@@ -28,29 +29,20 @@ export default function QuranSearchPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Universal Handler fired when ANY search method selects an Ayah
-  const handleAyahSelected = (
+  const handleAyahSelected = async (
     audioSrc: string,
     startTime: number,
     ayahMeta: { surah: number; ayah: number; text: string }
   ) => {
-    // Update active metadata for display
     setActiveAyah({
       ...ayahMeta,
       startTime,
     });
 
     if (audioRef.current) {
-      // Switch audio source if different from current track
-      if (!audioRef.current.src.endsWith(audioSrc)) {
-        audioRef.current.src = audioSrc;
-      }
-
-      // Seek to exact SRT timestamp and play
-      audioRef.current.currentTime = startTime;
-      audioRef.current
-        .play()
-        .then(() => setIsPlaying(true))
-        .catch((err) => console.log("تعذر التشغيل التلقائي:", err));
+      // Use the safe async audio player helper
+      await playAudioSegment(audioRef.current, audioSrc, startTime);
+      setIsPlaying(true);
     }
   };
 

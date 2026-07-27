@@ -171,3 +171,6 @@ While this MVP operates on a single YouTube video file to validate the search me
 ## 📄 License
 
 This project is open-source and available under the [MIT License](LICENSE).
+
+## [\u0621-\u064A]+ Arabic 
+## Arabic diacritics: [\u064B-\u0652\u0670]
