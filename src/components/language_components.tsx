@@ -3,7 +3,7 @@
 import React, { useState, useRef } from "react";
 import SurahAyahSearch from "@/components/SurahAyahSearch";
 import WordSearch from "@/components/WordSearch";
-import TajweedSearch from "./TajweedSearch";
+import TajweedSearch from "./Taj";
 import { normalizeQuranicMarks } from "./arabicUtils";
 import { playAudioSegment } from "./audioHandler";
 
@@ -116,7 +116,12 @@ export default function QuranSearchPage() {
                   البحث بالكلمة والتشكيل
                 </button>
                 <button
-                  onClick={() => setSearchMethod("tajweed")}
+                  onClick={
+                    () => {
+                      setSearchMethod("tajweed")
+                      setGlobalRecitation("sosi"); // Set your default recitation here
+                    }
+                  }
                   className={`pb-2 px-1 font-medium text-sm transition-colors ${
                     searchMethod === "tajweed" ? "border-b-2 border-primary text-primary font-bold" : "text-muted-foreground"
                   }`}
