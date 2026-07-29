@@ -126,7 +126,7 @@ export default function QuranSearchPage() {
                     searchMethod === "tajweed" ? "border-b-2 border-primary text-primary font-bold" : "text-muted-foreground"
                   }`}
                 >
-                  أحكام التجويد (الإدغام)
+                  أحكام التجويد
                 </button>
               </div>
 
