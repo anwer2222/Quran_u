@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { parseSrt, AyahCue } from "@/components/srtParser";
 import { parseEdghamCsv, EdghamRecord } from "@/components/csvParser";
-import { HAMZA_MOCK_DATA, HAMZA_TAXONOMY, HamzaExample } from "@/components/hamzaMockData";
+import { HAMZA_MOCK_DATA, HamzaExample } from "@/components/hamzaMockData";
 
 interface TajweedSearchProps {
   selectedRecitation: "hafs" | "warsh" | "sosi";
@@ -24,53 +24,6 @@ export default function TajweedSearch({
   selectedRecitation,
   onAyahSelected,
 }: TajweedSearchProps) {
-
-
-// 1. Cascading selection levels
-const [lvl1, setLvl1] = useState<string>("");
-const [lvl2, setLvl2] = useState<string>("");
-const [lvl3, setLvl3] = useState<string>("");
-const [lvl4, setLvl4] = useState<string>("");
-
-// Options for Level 2 based on Level 1
-const lvl2Options = lvl1 ? Object.keys(HAMZA_TAXONOMY[lvl1] || {}) : [];
-
-// Options for Level 3 based on Level 2
-const lvl3Options = lvl1 && lvl2 ? Object.keys(HAMZA_TAXONOMY[lvl1]?.[lvl2] || {}) : [];
-
-// Options for Level 4 based on Level 3
-const lvl4Options = lvl1 && lvl2 && lvl3 ? HAMZA_TAXONOMY[lvl1]?.[lvl2]?.[lvl3] || [] : [];
-
-// Reset deeper levels on parent change
-const handleLvl1Change = (val: string) => {
-  setLvl1(val);
-  setLvl2("");
-  setLvl3("");
-  setLvl4("");
-};
-
-const handleLvl2Change = (val: string) => {
-  setLvl2(val);
-  setLvl3("");
-  setLvl4("");
-};
-
-const handleLvl3Change = (val: string) => {
-  setLvl3(val);
-  setLvl4("");
-};
-
-// Filter matching rules against active 4-level path
-const activeHamzaRules = HAMZA_MOCK_DATA.filter((rule) => {
-  if (!lvl1) return false;
-  const [p1, p2, p3, p4] = rule.categoryPath;
-  if (lvl1 && p1 !== lvl1) return false;
-  if (lvl2 && p2 !== lvl2) return false;
-  if (lvl3 && p3 !== lvl3) return false;
-  if (lvl4 && p4 !== lvl4) return false;
-  return true;
-});
-
   // 1. Navigation category (Edgham vs. Hamza)
   const [tajweedCategory, setTajweedCategory] = useState<"edgham" | "hamza">("edgham");
 
@@ -471,137 +424,65 @@ const renderHighlightedHamzaText = (text: string, highlightedIndexes: number[]) 
       {tajweedCategory === "hamza" && (
         <div className="space-y-4">
           <p className="text-xs text-muted-foreground">
-            اختر التصنيف الفرعي لملاحظة الأحكام والتسمع للأمثلة النموذجية:
+            انقر على أي مثال قرآني للاستماع للتلاوة وقراءة القاعدة التجويدية:
           </p>
 
-          {/* Cascading Dropdowns Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-muted/30 p-3 rounded-radius border border-border">
-            {/* Level 1 Dropdown */}
-            <div>
-              <label className="block text-[11px] font-medium text-muted-foreground mb-1">
-                المستوى الأول (نوع الهمز)
-              </label>
-              <select
-                value={lvl1}
-                onChange={(e) => handleLvl1Change(e.target.value)}
-                className="w-full p-2 text-xs rounded-radius border border-input bg-popover text-popover-foreground focus:outline-none focus:ring-2 focus:ring-ring font-serif"
+          <div className="grid grid-cols-1 gap-4">
+            {HAMZA_MOCK_DATA.map((rule) => (
+              <div
+                key={rule.id}
+                className="bg-popover border border-border p-4 rounded-radius shadow-sm space-y-3"
               >
-                <option value="">-- اختر التصنيف الأول --</option>
-                {Object.keys(HAMZA_TAXONOMY).map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Level 2 Dropdown */}
-            <div>
-              <label className="block text-[11px] font-medium text-muted-foreground mb-1">
-                المستوى الثاني (الموقع/السياق)
-              </label>
-              <select
-                value={lvl2}
-                disabled={!lvl1 || lvl2Options.length === 0}
-                onChange={(e) => handleLvl2Change(e.target.value)}
-                className="w-full p-2 text-xs rounded-radius border border-input bg-popover text-popover-foreground disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-ring font-serif"
-              >
-                <option value="">-- اختر المستوى الثاني --</option>
-                {lvl2Options.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Level 3 Dropdown */}
-            <div>
-              <label className="block text-[11px] font-medium text-muted-foreground mb-1">
-                المستوى الثالث (الحركة/المحضر)
-              </label>
-              <select
-                value={lvl3}
-                disabled={!lvl2 || lvl3Options.length === 0}
-                onChange={(e) => handleLvl3Change(e.target.value)}
-                className="w-full p-2 text-xs rounded-radius border border-input bg-popover text-popover-foreground disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-ring font-serif"
-              >
-                <option value="">-- اختر المستوى الثالث --</option>
-                {lvl3Options.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Level 4 Dropdown */}
-            <div>
-              <label className="block text-[11px] font-medium text-muted-foreground mb-1">
-                المستوى الرابع (التفصيل/الهدف)
-              </label>
-              <select
-                value={lvl4}
-                disabled={!lvl3 || lvl4Options.length === 0}
-                onChange={(e) => setLvl4(e.target.value)}
-                className="w-full p-2 text-xs rounded-radius border border-input bg-popover text-popover-foreground disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-ring font-serif"
-              >
-                <option value="">-- اختر المستوى الرابع --</option>
-                {lvl4Options.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Display Area */}
-          {!lvl1 ? (
-            <p className="text-xs text-muted-foreground text-center py-4">
-              يرجى تحديد التصنيف من القوائم المنسدلة أعلاه لعرض أحكام الهمز والأمثلة.
-            </p>
-          ) : activeHamzaRules.length > 0 ? (
-            <div className="space-y-3">
-              {activeHamzaRules.map((rule) => (
-                <div
-                  key={rule.id}
-                  className="p-3 text-right rounded-radius border bg-popover text-popover-foreground border-border space-y-2"
-                >
-                  <div className="flex justify-between items-center text-xs font-mono font-bold text-primary border-b border-border pb-1.5">
-                    <span>{rule.title}</span>
-                    <span className="text-muted-foreground font-sans">الهمزات: {rule.hamzaCount}</span>
+                {/* Header Badge */}
+                <div className="flex justify-between items-start border-b border-border pb-2">
+                  <div>
+                    {/* <span className="inline-block text-[10px] font-mono bg-primary/10 text-primary px-2 py-0.5 rounded-radius font-bold mb-1">
+                      معرف الاحتمال: {rule.id}
+                    </span> */}
+                    <h4 className="text-sm font-bold font-serif text-foreground">{rule.title}</h4>
                   </div>
+                  <span className="text-xs font-mono bg-muted text-muted-foreground px-2 py-1 rounded-radius">
+                    الهمزات: {rule.hamzaCount} ({rule.scope})
+                  </span>
+                </div>
 
-                  {/* Compact Quranic Examples (Triggers Audio & Side-bar info) */}
-                  <div className="flex flex-wrap gap-2 pt-1">
+                {/* Phonetic Environment & Rules */}
+                <div className="text-xs space-y-1.5 bg-muted/30 p-2.5 rounded-radius border border-border/50">
+                  <p><strong className="text-primary">البيئة الصوتية:</strong> {rule.phoneticEnv}</p>
+                  <p><strong className="text-primary">مذهب القراء:</strong> {rule.recitersRules}</p>
+                  <p><strong className="text-primary">العمليات المعتمدة:</strong> {rule.approvedOperations}</p>
+                </div>
+
+                {/* Interactive Clickable Hamza Example Chips */}
+                <div className="space-y-1.5">
+                  <span className="text-xs font-bold text-muted-foreground block">الأمثلة القرآنية (انقر للتشغيل):</span>
+                  <div className="flex flex-wrap gap-2">
                     {rule.quranicExamples.map((ex) => (
                       <button
                         key={ex.id}
                         onClick={() => handleHamzaExampleClick(ex)}
-                        className="bg-card hover:bg-accent/30 border border-border hover:border-accent px-3 py-1.5 rounded-radius flex flex-col items-start space-x-reverse space-x-2 transition-all shadow-sm w-full"
+                        className="bg-card hover:bg-accent/30 border border-border hover:border-accent p-2.5 rounded-radius flex flex-col space-x-reverse space-x-2 transition-all shadow-sm hover:shadow"
                       >
-                        <span className="text-xs font-mono font-bold text-primary">
-                          {ex.surahName}:{ex.ayahNumber}
-                        </span>
+                        <span className="text-xs font-mono font-bold text-primary"> {ex.surahName}:{ex.ayahNumber}</span>
+                        
+                        {/* <span className="text-base font-mono font-bold text-foreground">{ex.text}</span> */}
+                        {/* Render text with colors applied via highlighted indexes */}
                         <span className="text-base font-mono font-bold text-foreground">
-                          {renderHighlightedHamzaText(ex.ayah, ex.highlighted || [])}
+                        {renderHighlightedHamzaText(ex.surah, ex.highlighted || [])}
                         </span>
-                      
+                        {/* <span className="text-xs text-primary">▶</span> */}
                       </button>
                     ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="p-6 text-center bg-muted/20 border border-dashed border-border rounded-radius space-y-1">
-              <p className="text-sm font-medium text-foreground">بيانات غير مسجلة</p>
-              <p className="text-xs text-muted-foreground">
-                هذا التصنيف لا يحتوي على أمثلة مسجلة في هذه النسخة التجريبية.
-              </p>
-            </div>
-          )}
+
+                {/* Reference */}
+                <div className="pt-2 border-t border-border/40 text-[10px] text-muted-foreground">
+                  <strong>المرجع الحاكم:</strong> {rule.reference}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
