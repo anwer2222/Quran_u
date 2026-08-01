@@ -53,3 +53,38 @@ export function parseEdghamCsv(csvContent: string): EdghamRecord[] {
 
   return records;
 }
+
+// export interface TfseerRecord {
+//   surahNumber: number;
+//   ayahNumber: number;
+//   ayah: string;
+//   tfseer: string;
+// }
+
+// export function parseTfseerCsv(csvContent: string): TfseerRecord[] {
+//   const lines = csvContent.replace(/\r\n/g, "\n").split("\n");
+//   const records: TfseerRecord[] = [];
+
+//   for (const line of lines) {
+//     if (!line.trim()) continue;
+
+//     // Split CSV fields
+//     const parts = line.split(",").map((p) => p.trim());
+
+//     if (parts.length >= 3) {
+//       const surahNumber = parseInt(parts[0], 10) || 1;
+//       const ayahNumber = parseInt(parts[1], 10) || 1;
+//       const ayah = parts[2];
+//       const tfseer = parts[3];
+
+//       records.push({
+//         surahNumber,
+//         ayahNumber,
+//         ayah,
+//         tfseer,
+//       });
+//     }
+//   }
+
+//   return records;
+// }

@@ -9,7 +9,7 @@ interface SurahAyahSearchProps {
   onAyahSelected: (
     audioSrc: string,
     startTime: number,
-    ayahMeta: { surah: number; ayah: number; text: string }
+    ayahMeta: { surah: number; ayah: number; text: string, tfseer:string }
   ) => void;
 }
 
@@ -113,9 +113,16 @@ export default function SurahAyahSearch({
         surah: currentSurahNum,
         ayah: matchedCue.ayahNumber,
         text: matchedCue.text,
+        tfseer: matchedCue.text,
       });
     }
   };
+
+   // Fetch global Edgham CSV data
+  //  const csvPath = `/tfseer.csv`;
+  //  const csvRes = await fetch(csvPath);
+  //  const csvText = await csvRes.text();
+  //  const parsedRecords = parseEdghamCsv(csvText);
 
   return (
     <div
@@ -123,7 +130,7 @@ export default function SurahAyahSearch({
       dir="rtl"
     >
       <h3 className="text-base font-bold font-serif text-primary border-b border-border pb-2">
-        طريقة البحث الأولية: التصفح بالسورة والآية
+        طريقة البحث الأولى: التصفح بالسورة والآية
       </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -10,7 +10,7 @@ interface TajweedSearchProps {
   onAyahSelected: (
     audioSrc: string,
     startTime: number,
-    ayahMeta: { surah: number; ayah: number; text: string }
+    ayahMeta: { surah: number; ayah: number; text: string; tfseer: string }
   ) => void;
 }
 
@@ -156,6 +156,7 @@ const activeHamzaRules = HAMZA_MOCK_DATA.filter((rule) => {
       surah: surahNum,
       ayah: startAyahNum,
       text: cue.text || record.snippetText,
+      tfseer:  cue.text || record.snippetText,
     });
   };
 
@@ -180,6 +181,7 @@ const activeHamzaRules = HAMZA_MOCK_DATA.filter((rule) => {
       surah: surahNum,
       ayah: ayahNum,
       text: example.text,
+      tfseer: example.text
     });
   };
 
@@ -315,7 +317,7 @@ const renderHighlightedHamzaText = (text: string, highlightedIndexes: number[]) 
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          أحكام الإدغام
+          الإدغام
         </button>
         <button
           onClick={() => setTajweedCategory("hamza")}
@@ -325,7 +327,7 @@ const renderHighlightedHamzaText = (text: string, highlightedIndexes: number[]) 
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          أحكام الهمزة
+          الهمزات
         </button>
       </div>
 
@@ -399,7 +401,7 @@ const renderHighlightedHamzaText = (text: string, highlightedIndexes: number[]) 
           {/* Letter Pairs Selector */}
           <div className="space-y-2">
             <label className="block text-xs font-medium text-muted-foreground">
-              اختر الحرفين الإدغام:
+              اختر الحرفين:
             </label>
             {loading ? (
               <p className="text-xs text-muted-foreground">جاري تحميل بيانات التجويد...</p>
@@ -471,7 +473,7 @@ const renderHighlightedHamzaText = (text: string, highlightedIndexes: number[]) 
       {tajweedCategory === "hamza" && (
         <div className="space-y-4">
           <p className="text-xs text-muted-foreground">
-            اختر التصنيف الفرعي لملاحظة الأحكام والتسمع للأمثلة النموذجية:
+          اختر التصنيف لاستعراض الأمثلة والاستماع إليه:
           </p>
 
           {/* Cascading Dropdowns Grid */}
@@ -518,7 +520,7 @@ const renderHighlightedHamzaText = (text: string, highlightedIndexes: number[]) 
             {/* Level 3 Dropdown */}
             <div>
               <label className="block text-[11px] font-medium text-muted-foreground mb-1">
-                المستوى الثالث (الحركة/المحضر)
+                المستوى الثالث (الحركة/النوع)
               </label>
               <select
                 value={lvl3}
@@ -538,7 +540,7 @@ const renderHighlightedHamzaText = (text: string, highlightedIndexes: number[]) 
             {/* Level 4 Dropdown */}
             <div>
               <label className="block text-[11px] font-medium text-muted-foreground mb-1">
-                المستوى الرابع (التفصيل/الهدف)
+                المستوى الرابع (التفصيل)
               </label>
               <select
                 value={lvl4}

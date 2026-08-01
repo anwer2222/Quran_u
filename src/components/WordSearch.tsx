@@ -9,7 +9,7 @@ interface WordSearchProps {
   onAyahSelected: (
     audioSrc: string,
     startTime: number,
-    ayahMeta: { surah: number; ayah: number; text: string }
+    ayahMeta: { surah: number; ayah: number; text: string; tfseer:string }
   ) => void;
 }
 
@@ -125,6 +125,7 @@ export default function WordSearch({
       surah: surahNum,
       ayah: ayahNum,
       text: item.text,
+      tfseer: item.text
     });
   };
 

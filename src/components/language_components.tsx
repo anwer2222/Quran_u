@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import SurahAyahSearch from "@/components/SurahAyahSearch";
 import WordSearch from "@/components/WordSearch";
 import TajweedSearch from "./Taj";
 import { normalizeQuranicMarks } from "./arabicUtils";
 import { playAudioSegment } from "./audioHandler";
+import { parseTafseerCsv, TafseerMap } from "@/components/tafseerParser";
 
 interface ActiveAyahMeta {
   surah: number;
   ayah: number;
   text: string;
+  tfseer: string;
   startTime: number;
 }
 
@@ -32,7 +34,7 @@ export default function QuranSearchPage() {
   const handleAyahSelected = async (
     audioSrc: string,
     startTime: number,
-    ayahMeta: { surah: number; ayah: number; text: string }
+    ayahMeta: { surah: number; ayah: number; text: string; tfseer:string }
   ) => {
     setActiveAyah({
       ...ayahMeta,
@@ -58,6 +60,33 @@ export default function QuranSearchPage() {
     }
   };
 
+  // Global Tafseer Cache
+  const [tafseerMap, setTafseerMap] = useState<TafseerMap>({});
+  const [loadingTafseer, setLoadingTafseer] = useState<boolean>(true);
+
+  // Pre-load global CSV Tafseer on mount
+  useEffect(() => {
+    async function loadGlobalTafseer() {
+      try {
+        const res = await fetch("/tfseer.csv");
+        const csvText = await res.text();
+        const parsedMap = parseTafseerCsv(csvText);
+        setTafseerMap(parsedMap);
+      } catch (err) {
+        console.error("خطأ أثناء تحميل ملف التفسير الشامل:", err);
+      } finally {
+        setLoadingTafseer(false);
+      }
+    }
+
+    loadGlobalTafseer();
+  }, []);
+
+  // Instant O(1) Lookup for Active Ayah
+  const currentTafseerText = activeAyah
+    ? tafseerMap[`${activeAyah.surah}:${activeAyah.ayah}`] || "لا يتوفر تفسير لهذه الآية في الملف الحالي."
+    : null;
+
   return (
     <main dir="rtl" className="min-h-screen font-sans bg-background text-foreground antialiased p-spacing md:p-8 tracking-normal">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -66,7 +95,8 @@ export default function QuranSearchPage() {
         <header className="border-b border-border pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-3xl font-serif font-bold text-primary">الظواهر الصوتية</h1>
-            <p className="text-muted-foreground text-sm">استمع للتلاوات الصوتية النقية وقارن نطق الكلمات وأحكام التجويد عبر الملفات الصوتية المباشرة.</p>
+            {/* <p className="text-muted-foreground text-sm">استمع للتلاوات الصوتية النقية وقارن نطق الكلمات وأحكام التجويد عبر الملفات الصوتية المباشرة.</p> */}
+            <p className="text-muted-foreground text-sm"> استعرض الأمثلة القرائية لظواهر صوتية، واستمع إليها لتتمكن من أدائها أداء صحيحا</p>
           </div>
 
           <div className="bg-card border border-border p-3 rounded-radius shadow-sm flex items-center space-x-reverse space-x-3">
@@ -126,7 +156,7 @@ export default function QuranSearchPage() {
                     searchMethod === "tajweed" ? "border-b-2 border-primary text-primary font-bold" : "text-muted-foreground"
                   }`}
                 >
-                  أحكام التجويد
+                   الظواهر الصوتية
                 </button>
               </div>
 
@@ -192,7 +222,7 @@ export default function QuranSearchPage() {
 
           {/* Column 3: Context Panel */}
           <div className="space-y-6">
-            <div className="bg-card text-card-foreground p-6 rounded-radius border border-border shadow-md h-full space-y-6 flex flex-col justify-between">
+            <div className="bg-card text-card-foreground p-6 rounded-radius border border-border shadow-md h-full flex flex-col justify-between">
               <div>
                 <h2 className="text-lg font-bold border-b border-border pb-2 text-primary font-serif">
                   اللوحة التفسيرية والتعليمية
@@ -210,24 +240,18 @@ export default function QuranSearchPage() {
                       </p>
                     </div>
 
-                    {/* Dynamic Tafseer Placeholder */}
+                    {/* Dynamic Tafseer Display */}
                     <div>
                       <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                        التفسير والبيان
+                        التفسير والبيان (التفسير الميسر)
                       </h3>
-                      <p className="text-sm leading-relaxed text-foreground/90 bg-popover p-3 rounded-radius border border-border">
-                        تفسير الآية رقم ({activeAyah.ayah}) من سورة ({activeAyah.surah}) برواية ({globalRecitation === "hafs" ? "حفص عن عاصم" : globalRecitation === "warsh"? "ورش عن نافع" : "السوسي عن أبي عمرو"}).
-                      </p>
-                    </div>
-
-                    {/* Recitation Guide Placeholder */}
-                    <div>
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                        دليل النطق والتجويد
-                      </h3>
-                      <p className="text-sm leading-relaxed text-foreground/90 bg-popover p-3 rounded-radius border border-border">
-                        استمع لتطبيق مخارج الحروف ومدود الآية الدقيقة بالرواية المختارة عند التوقيت الزمني المحدد.
-                      </p>
+                      {loadingTafseer ? (
+                        <p className="text-xs text-muted-foreground">جاري تحميل التفسير...</p>
+                      ) : (
+                        <p className="text-sm font-serif leading-relaxed text-foreground/90 bg-popover p-3 rounded-radius border border-border">
+                          {currentTafseerText}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -236,13 +260,9 @@ export default function QuranSearchPage() {
                   </div>
                 )}
               </div>
-
-              <div className="pt-4 border-t border-border text-[11px] text-muted-foreground flex justify-between items-center font-mono">
-                <span>تزامن الصوت: SRT Aligned</span>
-                <span>المشغل: HTML5 Audio</span>
-              </div>
             </div>
           </div>
+        
 
         </div>
       </div>
