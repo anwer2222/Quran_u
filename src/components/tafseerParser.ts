@@ -14,19 +14,23 @@ export function parseTafseerCsv(csvContent: string): TafseerMap {
     // Split CSV by comma (handling basic CSV format)
     const firstComma = line.indexOf(",");
     const secondComma = line.indexOf(",", firstComma + 1);
+    const trdComma = line.indexOf(",", secondComma + 1);
 
     if (firstComma !== -1 && secondComma !== -1) {
       const surahStr = line.substring(0, firstComma).trim();
       const ayahStr = line.substring(firstComma + 1, secondComma).trim();
-      let tafseerText = line.substring(secondComma + 1).trim();
+      let tafseerText = line.substring(trdComma + 1).trim();
 
       // Clean surrounding quotes if present in CSV
-      if (tafseerText.startsWith('"') && tafseerText.endsWith('"')) {
-        tafseerText = tafseerText.slice(1, -1).replace(/""/g, '"');
+      if (tafseerText.includes('"')){// if (tafseerText.startsWith('"') && tafseerText.endsWith('"')) {
+        tafseerText = tafseerText.slice(1, -1).replace(/"/g, '');
       }
 
-      const surahNum = parseInt(surahStr, 10);
+      let surahNum = parseInt(surahStr, 10);
       const ayahNum = parseInt(ayahStr, 10);
+ 
+      surahNum = surahNum===3?2:surahNum
+
 
       if (!isNaN(surahNum) && !isNaN(ayahNum)) {
         const key = `${surahNum}:${ayahNum}`;

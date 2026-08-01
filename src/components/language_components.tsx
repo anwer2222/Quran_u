@@ -243,7 +243,7 @@ export default function QuranSearchPage() {
                     {/* Dynamic Tafseer Display */}
                     <div>
                       <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                        التفسير والبيان (التفسير الميسر)
+                        الاعراب والبيان
                       </h3>
                       {loadingTafseer ? (
                         <p className="text-xs text-muted-foreground">جاري تحميل التفسير...</p>
