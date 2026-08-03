@@ -21,7 +21,7 @@ export function parseEdghamCsv(csvContent: string): EdghamRecord[] {
     const parts = line.split(",").map((p) => p.trim());
 
     if (parts.length >= 7) {
-      const surahNumber = parseInt(parts[0], 10) || 1;
+      let surahNumber = parseInt(parts[0], 10) || 1;
       const snippetText = parts[1];
       const ayahNumberRange = parts[2];
       const letterPair = parts[3];
@@ -34,6 +34,7 @@ export function parseEdghamCsv(csvContent: string): EdghamRecord[] {
       const startAyahNumber = ayahMatches ? parseInt(ayahMatches[0], 10) : 1;
       const secondAyahNumber = ayahMatches && ayahMatches.length > 1 ? parseInt(ayahMatches[1], 10) : undefined;
 
+      surahNumber = surahNumber===31?2:surahNumber===2?31:surahNumber
       // Parse word locations (e.g., "0 - 0" or "2 - 3" -> [0, 0] or [2, 3])
       const wordLocations = locationStr.split("-").map((loc) => parseInt(loc.trim(), 10));
 

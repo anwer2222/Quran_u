@@ -92,7 +92,7 @@ const activeHamzaRules = HAMZA_MOCK_DATA.filter((rule) => {
 
       try {
         // Fetch CSV dataset
-        const csvPath = `/edgham_${selectedRecitation}.csv`;
+        const csvPath = `/edgham-full.csv`; //${selectedRecitation}
         const csvRes = await fetch(csvPath);
         const csvText = await csvRes.text();
         setGlobalEdghamRecords(parseEdghamCsv(csvText));
