@@ -448,13 +448,14 @@ const renderHighlightedHamzaText = (text: string, highlightedIndexes: number[]) 
                         <span className="text-primary">
                           سورة [{record.surahNumber}] - الآية: [{record.ayahNumberRange}]
                         </span>
-                        <span className="bg-secondary text-secondary-foreground px-2 py-0.5 rounded-radius text-[10px]">
-                          {record.type}
-                        </span>
+                        
                       </div>
-                      <span className="text-muted-foreground font-sans">
+                      <span className="bg-secondary text-secondary-foreground px-2 py-0.5 rounded-radius text-[10px]">
+                        {record.type}
+                        </span>
+                      {/* <span className="text-muted-foreground font-sans">
                         مرجع الشرح: صـ {record.refPageNumber}
-                      </span>
+                      </span> */}
                     </div>
 
                     {/* Full Ayah from SRT with Colored Edgham */}
