@@ -8,6 +8,7 @@ import {
   LayoutGrid, Download
 } from 'lucide-react';
 import QuranAudioSearchPage from '../components/language_components';
+import GrammarSearchPage from '@/components/grammer_comp';
 
 // Custom CSS styling block to inject Riyadh-Cairo-Amiri Arabic Typography 
 // and custom wavy background graphics inspired by "منصة فلك - مدونة القرآن الكريم.jpg"
@@ -145,7 +146,7 @@ const NGrams_DATA = [
 ];
 
 export default function App() {
-  const [activeTool, setActiveTool] = useState<'home' | 'concordance' | 'frequency' | 'ngrams' | 'collocates' | 'affixes' | 'collocations' | 'distribution' | 'examples' | 'terminology' | 'statistics' | 'compos'>('home');
+  const [activeTool, setActiveTool] = useState<'home' | 'concordance' | 'frequency' | 'ngrams' | 'collocates' | 'affixes' | 'collocations' | 'distribution' | 'examples' | 'terminology' | 'statistics' | 'compos' | "compot">('home');
   const [searchQuery, setSearchQuery] = useState('');
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [filterSurahType, setFilterSurahType] = useState<'جميع' | 'مكية' | 'مدنية'>('جميع');
@@ -644,6 +645,15 @@ export default function App() {
                 <QuranAudioSearchPage/>
               </div>
             )}
+
+            {/* Tool View 0: compos Tool (الكشاف السياقي) */}
+            {activeTool === 'compot' && (
+              <div className="lg:min-w-4xl space-y-6 animate-fadeIn flex-1 flex flex-col">
+                <GrammarSearchPage/>
+              </div>
+            )}
+
+
 
             {/* Tool View 2: Concordancer Tool (الكشاف السياقي) */}
             {activeTool === 'concordance' && (
