@@ -1,9 +1,9 @@
 export interface HamzaExample {
   id: string;
   surahName: string;
+  surahNumber: number;
   ayahNumber: number;
   text: string;
-  surah: string;
   ayah: string;
   highlighted: number[];
 }
@@ -26,93 +26,82 @@ export interface HamzaRuleRecord {
 // Full 4-level Category Taxonomy Tree
 export const HAMZA_TAXONOMY: Record<string, Record<string, Record<string, string[]>>> = {
   "الهمزتان": {
-
     "في كلمة واحدة": {
-      "كسرة لاحقة": ["مفتوحة > مكسورة", "الاستفهامان"],
-      "فتحة لاحقة": ["مفتوحة > مفتوحة","الهمزة الأولى الداخلة على ألف اللام"],
-      "ضمة لاحقة": ["مفتوحة > مضمومة"],
+      // "الاستفهامان":["مفتوحة + مكسورة"],
+      "الهمزة الداخلة على ألف اللام": ["مفتوحة + مفتوحة"],
+      "متماثلتان": ["مفتوحة + مفتوحة"],
+      "مختلفتان": ["مفتوحة + مكسورة","مفتوحة + مضمومة", "مفتوحة + ساكنة", ],
     },
     "في كلمتين": {
-      "فتحة سابقة": ["مفتوحة > مفتوحة", "مفتوحة > مضمومة", "مفتوحة > مكسورة"],
-      "ضمة سابقة":["مضمومة > مضمومة", "مضمومة > مفتوحة", "مضمومة > مكسورة"],
-      "كسرة سابقة":  ["مكسورة > مكسورة", "مكسورة > مفتوحة"],
+      "متماثلتان": ["مكسورة + مكسورة", "مفتوحة + مفتوحة", "مضمومة + مضمومة"],
+      "مختلفتان":["مفتوحة + مكسورة", "مفتوحة + مضمومة", "مضمومة + مفتوحة", "مضمومة + مكسورة", "مكسورة + مفتوحة"],
     },
   },
   "الهمزة المفردة": {
-    "ساكنة": {
-      "فتحة سابقة": ["فتح > همزة ساكنة"],
-      "ضمة سابقة": ["ضم > همزة ساكنة"],
-      "كسرة سابقة": ["كسر > همزة ساكنة", "كسر من همزة الوصل > همزة ساكنة"],
-      "سكون البناء": ["كسرة سابقة > همزة ساكنة", "فتحة سابقة > همزة ساكنة"],
+    "الساكنة": {
+      "أصل": ["فتحة سابقة + همزة ساكنة","ضمة سابقة + همزة ساكنة", "كسر + همزة ساكنة"],
+      "سكون البناء": ["كسرة سابقة + همزة ساكنة", "فتحة سابقة + همزة ساكنة"],
       "سكون الجزم": [
-        "فتحة سابقة > همزة ساكنة",
-        "ضمة سابقة > همزة ساكنة",
-        "كسرة سابقة > همزة ساكنة",
-        "همزة الوصل > همزة ساكنة",
-        "واو الجماعة > همزة ساكنة",
+        "فتحة سابقة + همزة ساكنة",
+        "ضمة سابقة + همزة ساكنة",
+        "كسرة سابقة + همزة ساكنة",
       ],
+      "الهمزة الساكنة بعد همزة الوصل": ["همزة وصل مكسورة + همزة أصلية ساكنة"],
+      "بعد واو الجماعة": ["واو الجماعة + همزة ساكنة"]
+      
     },
-    "متحركة": {
-      "ضمة سابقة": [
-        "ضم > همزة مفتوحة",
-        "ضم > همزة مضمومة",
-        "ضم > همزة ساكنة",
-        "ضم > همزة مكسورة",
+    "المتحركة": {
+      "مختلفة": [
+        "ساكن + همزة مضمومة",
+        "ساكن + همزة مفتوحة",
+        "ساكن + همزة مكسورة",
+        "ضمة سابقة + همزة مكسورة",
+        "ضمة سابقة + همزة مفتوحة",
+        "فتحة سابقة + همزة مضمومة",
+        "فتحة سابقة + همزة مكسورة",
+        "كسرة سابقة + همزة مفتوحة",
+        "كسرة سابقة + همزة مضمومة",
+        "كسرة سابقة + همزة مضمومة + واو الجماعة",
       ],
-      "فتحة سابقة": [
-        "فتح > همزة مكسورة",
-        "فتح > همزة مضمومة",
-        "فتح > همزة مفتوحة",
+      "متماثلة": [
+        "ضمة سابقة + همزة مضمومة",
+        "فتحة سابقة + همزة مفتوحة",
+        "كسرة سابقة + همزة مكسورة",
       ],
-      "كسرة سابقة": [
-        "كسر > همزة مضمومة",
-        "كسر > همزة مفتوحة",
-        "كسر > همزة مكسورة",
-        "كسر > همزة مضمومة + واو الجماعة",
+      "مد": [
+        "مد + همزة مضمومة",
+        "مد + همزة مكسورة",
+        "مد + همزة مفتوحة",
+        "همزة مفتوحة + مد",
       ],
-      "واو الجماعة": [
-        "واو الجماعة > همزة مفتوحة",
-        "واو الجماعة > همزة مكسورة",
+
+      "بعد واو الجماعة": [
+        "واو الجماعة + همزة مفتوحة",
+        "واو الجماعة + همزة مكسورة",
       ],
-      "مد سابق": [
-        "مد > همزة مفتوحة",
-        "مد > همزة مضمومة",
-        "مد > همزة مكسورة",
+      "ميم الجمع": [
+        "ميم جمع + همزة وصل",
+        "ميم جمع + همزة مكسورة",
+        "ميم جمع + همزة مفتوحة",
+        "ميم جمع + همزة مضمومة",
       ],
-      "سكون سابق": [
-        "ساكن > همزة مضمومة",
-        "ساكن > همزة مفتوحة",
-        "ساكن > همزة مكسورة",
+      "تنوين": [
+        "تنوين ضم + همزة مفتوحة",
+        "تنوين فتح + همزة مفتوحة",
+        "تنوين كسر + همزة مكسورة",
       ],
-      "تنوين سابق": [
-        "تنوين ضم > همزة مفتوحة",
-        "تنوين فتح > همزة مفتوحة",
-        "تنوين كسر > همزة مكسورة",
-      ],
-      "ميم جمع": [
-        "ميم جمع > همزة وصل",
-        "ميم جمع > همزة ضمة",
-        "ميم جمع > همزة مفتوحة",
-        "ميم جمع ساكنة > همزة مكسورة",
-      ],
-      "صوت مشدد / مد": [
-        "همزة مضمومة > صوت مشدد",
-        "همزة مفتوحة > مد",
-      ],
-      "هاء / ياء سابق": [
-        "هاء سكت ساكنة > همزة مكسورة",
-        "ياء لين ساكنة > همزة قطع مفتوحة",
-      ],
+      "ياء لين":["ياء لين ساكنة + همزة قطع مفتوحة"],
+      "صوت مشدد": ["همزة مضمومة + صوت مشدد"],
+      "هاء السكت": ["هاء سكت + همزة مكسورة"],
+      // "همزتان":["همزتان مفتوحتان في كلمة واحدة"]
     },
   },
-
-
 };
 
 export const HAMZA_MOCK_DATA: HamzaRuleRecord[] = [
   {
     id: "HP023",
-    title: "همزتان في كلمة",
+    title: "همزتان في كلمة - مختلفتان",
     phoneticEnv: "الموطن: بداية الكلمة | الحركات: مفتوحة + مكسورة",
     hamzaCount: 2,
     scope: "في كلمة",
@@ -120,9 +109,9 @@ export const HAMZA_MOCK_DATA: HamzaRuleRecord[] = [
     recitersRules: "نافع وأبو جعفر: الأول خبر والثاني استفهام | الباقون: استفهامان",
     approvedOperations: "الخبر أو الاستفهام بحسب القراءة؛ وعند الاستفهام يجري أصل التحقيق أو التسهيل والفصل",
     reference: "ابن الجزري، النشر في القراءات العشر، ص 370–378",
-    categoryPath: ["الهمزتان","في كلمة واحدة", "كسرة لاحقة", "الاستفهامان",],
+    categoryPath: ["الهمزتان","في كلمة واحدة", "مختلفتان","مفتوحة + مكسورة",],
     quranicExamples: [
-      { id: "H068", surahName: "النمل", surah: "27", ayahNumber: 67, text: "أَئِذَا | أَئِنَّا", ayah: "وَقَالَ ٱلَّذِينَ كَفَرُوٓاْ أَءِذَا كُنَّا تُرَٰبٗا وَءَابَآؤُنَآ أَئِنَّا لَمُخۡرَجُونَ",highlighted: [3,7] },
+      { id: "H068", surahName: "النمل", surahNumber: 27, ayahNumber: 67, text: "أَئِذَا | أَئِنَّا", ayah: "وَقَالَ ٱلَّذِينَ كَفَرُوٓاْ أَءِذَا كُنَّا تُرَٰبٗا وَءَابَآؤُنَآ أَئِنَّا لَمُخۡرَجُونَ",highlighted: [3,7] },
       // { id: "H069", surahName: "النمل", surah: "27", ayahNumber: 67, text: "أَئِنَّا",ayah: "وَقَالَ ٱلَّذِينَ كَفَرُوٓاْ أَءِذَا كُنَّا تُرَٰبٗا وَءَابَآؤُنَآ أَئِنَّا لَمُخۡرَجُونَ", highlighted: [7] },
     ],
   },
@@ -136,10 +125,97 @@ export const HAMZA_MOCK_DATA: HamzaRuleRecord[] = [
     recitersRules: "عاصم وابن عامر وحمزة والكسائي وروح على التحقيق؛ أبو عمرو على إسقاط الأولى...",
     approvedOperations: "تحقيقهما؛ إسقاط الأولى؛ تسهيل الأولى؛ تحقيق الأولى وتسهيل الثانية...",
     reference: "ابن الجزري، النشر في القراءات العشر، ص 370–378",
-    categoryPath: ["الهمزتان","في كلمتين", "كسرة سابقة", "مكسورة > مكسورة",],
+    categoryPath: ["الهمزتان","في كلمتين", "متماثلتان", "مكسورة + مكسورة",],
     quranicExamples: [
-      { id: "H086", surahName: "البقرة", surah: "2", ayahNumber: 31, text: "هَٰؤُلَاءِ | إِنْ", ayah:"وَعَلَّمَ ءَادَمَ ٱلۡأَسۡمَآءَ كُلَّهَا ثُمَّ عَرَضَهُمۡ عَلَى ٱلۡمَلَٰٓئِكَةِ فَقَالَ أَنۢبِـُٔونِي بِأَسۡمَآءِ هَٰٓؤُلَآءِ إِن كُنتُمۡ صَٰدِقِينَ", highlighted:[11,12] },
-      { id: "H092", surahName: "النور", surah: "24", ayahNumber: 33, text: "الْبِغَاءِ | إِنْ", ayah:" وَلَا تُكۡرِهُواْ فَتَيَٰتِكُمۡ عَلَى ٱلۡبِغَآءِ إِنۡ أَرَدۡنَ تَحَصُّنٗا لِّتَبۡتَغُواْ عَرَضَ ٱلۡحَيَوٰةِ ٱلدُّنۡيَاۚ وَمَن يُكۡرِههُّنَّ فَإِنَّ ٱللَّهَ مِنۢ بَعۡدِ إِكۡرَٰهِهِنَّ غَفُورٞ رَّحِيمٞ",highlighted:[5,6] },
+      { id: "H086", surahName: "البقرة", surahNumber: 2, ayahNumber: 31, text: "هَٰؤُلَاءِ | إِنْ", ayah:"وَعَلَّمَ ءَادَمَ ٱلۡأَسۡمَآءَ كُلَّهَا ثُمَّ عَرَضَهُمۡ عَلَى ٱلۡمَلَٰٓئِكَةِ فَقَالَ أَنۢبِـُٔونِي بِأَسۡمَآءِ هَٰٓؤُلَآءِ إِن كُنتُمۡ صَٰدِقِينَ", highlighted:[11,12] },
+      { id: "H092", surahName: "النور", surahNumber: 24, ayahNumber: 33, text: "الْبِغَاءِ | إِنْ", ayah:" وَلَا تُكۡرِهُواْ فَتَيَٰتِكُمۡ عَلَى ٱلۡبِغَآءِ إِنۡ أَرَدۡنَ تَحَصُّنٗا لِّتَبۡتَغُواْ عَرَضَ ٱلۡحَيَوٰةِ ٱلدُّنۡيَاۚ وَمَن يُكۡرِههُّنَّ فَإِنَّ ٱللَّهَ مِنۢ بَعۡدِ إِكۡرَٰهِهِنَّ غَفُورٞ رَّحِيمٞ",highlighted:[5,6] },
     ],
   },
 ];
+
+/**
+ * Helper to compute 0-based word indexes of targetedWord inside ayahText
+ */
+function getHighlightedIndexes(ayahText: string, targetedWord: string): number[] {
+  if (!ayahText || !targetedWord) return [];
+
+  const textWords = ayahText.trim().split(/\s+/);
+  const targetWords = targetedWord.trim().split(/\s+/);
+  const indexes: number[] = [];
+
+  // Find where targetedWord tokens appear sequentially or individually in ayahText
+  for (let i = 0; i < textWords.length; i++) {
+    // Check for exact word match or substring match ignoring diacritics/punctuation
+    const cleanTextWord = textWords[i].replace(/[^\u0600-\u06FF]/g, "");
+    
+    for (const target of targetWords) {
+      const cleanTarget = target.replace(/[^\u0600-\u06FF]/g, "");
+      if (cleanTextWord && cleanTarget && cleanTextWord.includes(cleanTarget)) {
+        indexes.push(i);
+        break;
+      }
+    }
+  }
+
+  return indexes;
+}
+
+/**
+ * Parses the 8-column Hamza CSV file:
+ * <1st level cat>,<2nd cat>,<3rd cat>,<4th cat>,<surahNumber>,<ayahNumber>,<ayahText>,<targetedWord>
+ */
+export function parseHamzaCsv(csvContent: string): HamzaRuleRecord[] {
+  const lines = csvContent.replace(/\r\n/g, "\n").split("\n");
+  const recordsMap: Record<string, HamzaRuleRecord> = {};
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    // Split CSV fields safely
+    const parts = line.split(",").map((p) => p.trim().replace(/^"|"$/g, ""));
+
+    if (parts.length >= 8) {
+      const [cat1, cat2, cat3, cat4, surahStr, ayahStr, ayahText, targetedWord] = parts;
+
+      const surahNum = parseInt(surahStr, 10) || 1;
+      const ayahNum = parseInt(ayahStr, 10) || 1;
+
+      // Group key based on the 4-level taxonomy path
+      const ruleKey = `${cat1}|${cat2}|${cat3}|${cat4}`;
+
+      // Calculate highlighted word indexes dynamically
+      const highlighted = getHighlightedIndexes(ayahText, targetedWord);
+
+      const example: HamzaExample = {
+        id: `HZM_${i + 1}`,
+        surahName: `سورة ${surahNum}`, // Surah name can be mapped or resolved dynamically
+        surahNumber: surahNum,
+        ayahNumber: ayahNum,
+        ayah: ayahText,
+        text: targetedWord,
+        highlighted,
+      };
+
+      if (!recordsMap[ruleKey]) {
+        recordsMap[ruleKey] = {
+          id: `HP_${Object.keys(recordsMap).length + 1}`,
+          title: `${cat1} - ${cat2} (${cat3} / ${cat4})`,
+          phoneticEnv: `${cat3} -> ${cat4}`,
+          hamzaCount: 1,
+          scope: cat2,
+          context: cat3,
+          recitersRules: "حسب القراءة والطريق المعتمد",
+          approvedOperations: "التحقيق / التسهيل / الإبدال / الإسقاط",
+          reference: "ابن الجزري، النشر في القراءات العشر",
+          categoryPath: [cat1, cat2, cat3, cat4],
+          quranicExamples: [example],
+        };
+      } else {
+        recordsMap[ruleKey].quranicExamples.push(example);
+      }
+    }
+  }
+
+  return Object.values(recordsMap);
+}

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { parseSrt, AyahCue } from "@/components/srtParser";
 import { parseEdghamCsv, EdghamRecord } from "@/components/csvParser";
-import { HAMZA_MOCK_DATA, HAMZA_TAXONOMY, HamzaExample } from "@/components/hamzaMockData";
+import { HAMZA_MOCK_DATA, HAMZA_TAXONOMY, HamzaExample, HamzaRuleRecord, parseHamzaCsv } from "@/components/hamzaMockData";
 
 interface TajweedSearchProps {
   selectedRecitation: "hafs" | "warsh" | "sosi";
@@ -24,6 +24,26 @@ export default function TajweedSearch({
   selectedRecitation,
   onAyahSelected,
 }: TajweedSearchProps) {
+
+// Add state for dynamic CSV Hamza records
+const [hamzaRecords, setHamzaRecords] = useState<HamzaRuleRecord[]>([]);
+
+// Pre-load CSV dataset for Hamza inside useEffect
+useEffect(() => {
+  async function loadHamzaCsvData() {
+    try {
+      const res = await fetch("/hamza_full.csv");
+      const csvText = await res.text();
+      const parsedRecords = parseHamzaCsv(csvText);
+      setHamzaRecords(parsedRecords);
+    } catch (err) {
+      console.error("خطأ أثناء تحميل ملف CSV الخاص بالهمزات:", err);
+    }
+  }
+
+  loadHamzaCsvData();
+}, []);
+
 
 
 // 1. Cascading selection levels
@@ -61,7 +81,18 @@ const handleLvl3Change = (val: string) => {
 };
 
 // Filter matching rules against active 4-level path
-const activeHamzaRules = HAMZA_MOCK_DATA.filter((rule) => {
+// const activeHamzaRules = HAMZA_MOCK_DATA.filter((rule) => {
+//   if (!lvl1) return false;
+//   const [p1, p2, p3, p4] = rule.categoryPath;
+//   if (lvl1 && p1 !== lvl1) return false;
+//   if (lvl2 && p2 !== lvl2) return false;
+//   if (lvl3 && p3 !== lvl3) return false;
+//   if (lvl4 && p4 !== lvl4) return false;
+//   return true;
+// });
+
+// Update active filtering to evaluate against hamzaRecords
+const activeHamzaRules = hamzaRecords.filter((rule) => {
   if (!lvl1) return false;
   const [p1, p2, p3, p4] = rule.categoryPath;
   if (lvl1 && p1 !== lvl1) return false;
