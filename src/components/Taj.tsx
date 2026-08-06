@@ -200,7 +200,8 @@ const activeHamzaRules = hamzaRecords.filter((rule) => {
       "النور": 24,
     };
 
-    const surahNum = surahNumMap[example.surahName] || 2;
+    const surahNum = example.surahNumber;
+
     const ayahNum = Number(example.ayahNumber);
     const audioPath = `/audio/${surahNum}_${ayahNum}.wav`;// ${selectedRecitation}
     const surahCues = srtDataStore[surahNum] || [];

@@ -140,7 +140,7 @@ function getHighlightedIndexes(ayahText: string, targetedWord: string): number[]
   if (!ayahText || !targetedWord) return [];
 
   const textWords = ayahText.trim().split(/\s+/);
-  const targetWords = targetedWord.trim().split(/\s+/);
+  const targetWords = targetedWord.trim().split(/ \| /);
   const indexes: number[] = [];
 
   // Find where targetedWord tokens appear sequentially or individually in ayahText
@@ -191,7 +191,7 @@ export function parseHamzaCsv(csvContent: string): HamzaRuleRecord[] {
         id: `HZM_${i + 1}`,
         surahName: `سورة ${surahNum}`, // Surah name can be mapped or resolved dynamically
         surahNumber: surahNum,
-        ayahNumber: ayahNum,
+        ayahNumber: ayahNum , //===2?31:ayahNum===31?2:ayahNum,
         ayah: ayahText,
         text: targetedWord,
         highlighted,
