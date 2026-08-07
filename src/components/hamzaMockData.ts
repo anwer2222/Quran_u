@@ -136,29 +136,50 @@ export const HAMZA_MOCK_DATA: HamzaRuleRecord[] = [
 /**
  * Helper to compute 0-based word indexes of targetedWord inside ayahText
  */
+
 function getHighlightedIndexes(ayahText: string, targetedWord: string): number[] {
   if (!ayahText || !targetedWord) return [];
 
   const textWords = ayahText.trim().split(/\s+/);
-  const targetWords = targetedWord.trim().split(/ \| /);
+  const cleanTarget = targetedWord.trim();
   const indexes: number[] = [];
 
-  // Find where targetedWord tokens appear sequentially or individually in ayahText
-  for (let i = 0; i < textWords.length; i++) {
-    // Check for exact word match or substring match ignoring diacritics/punctuation
-    const cleanTextWord = textWords[i].replace(/[^\u0600-\u06FF]/g, "");
+  // If the target contains a space, it's a multi-word sequence phrase
+  if (cleanTarget.includes(" ")) {
+    const targetTokens = cleanTarget.split(/\s+/).map((t) => t.replace(/[^\u0600-\u06FF]/g, ""));
     
-    for (const target of targetWords) {
-      const cleanTarget = target.replace(/[^\u0600-\u06FF]/g, "");
-      if (cleanTextWord && cleanTarget && cleanTextWord.includes(cleanTarget)) {
+    for (let i = 0; i <= textWords.length - targetTokens.length; i++) {
+      let matched = true;
+      for (let j = 0; j < targetTokens.length; j++) {
+        const cleanTextWord = textWords[i + j].replace(/[^\u0600-\u06FF]/g, "");
+        if (!cleanTextWord || cleanTextWord !== targetTokens[j]) {
+          matched = false;
+          break;
+        }
+      }
+      if (matched) {
+        // Highlight all consecutive word indexes belonging to this sequence phrase
+        for (let j = 0; j < targetTokens.length; j++) {
+          indexes.push(i + j);
+        }
+        break; // Stop after finding the first sequence match
+      }
+    }
+  } else {
+    // Single word matching
+    const cleanTargetWord = cleanTarget.replace(/[^\u0600-\u06FF]/g, "");
+    for (let i = 0; i < textWords.length; i++) {
+      const cleanTextWord = textWords[i].replace(/[^\u0600-\u06FF]/g, "");
+      if (cleanTextWord && cleanTargetWord && cleanTextWord.includes(cleanTargetWord)) {
         indexes.push(i);
-        break;
       }
     }
   }
 
   return indexes;
 }
+
+
 
 /**
  * Parses the 8-column Hamza CSV file:

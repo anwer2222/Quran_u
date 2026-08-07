@@ -28,7 +28,7 @@ export default function GrammarSearchPage() {
   useEffect(() => {
     async function loadGlobalTafseer() {
       try {
-        const res = await fetch("/tafseer/moyassar_full.csv");
+        const res = await fetch("/tafseer.csv");
         const csvText = await res.text();
         const parsedMap = parseTafseerCsv(csvText);
         setTafseerMap(parsedMap);

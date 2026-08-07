@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { parseSrt, AyahCue } from "@/components/srtParser";
 import { parseEdghamCsv, EdghamRecord } from "@/components/csvParser";
 import { HAMZA_MOCK_DATA, HAMZA_TAXONOMY, HamzaExample, HamzaRuleRecord, parseHamzaCsv } from "@/components/hamzaMockData";
+import { normalizeQuranicMarks } from "./arabicUtils";
 
 interface TajweedSearchProps {
   selectedRecitation: "hafs" | "warsh" | "sosi";
@@ -236,7 +237,7 @@ const renderHighlightedHamzaText = (text: string, highlightedIndexes: number[]) 
                     : ""
                 }
               >
-                {word}
+                {normalizeQuranicMarks(word)}
               </span>{" "}
             </React.Fragment>
           );
@@ -274,7 +275,7 @@ const renderHighlightedHamzaText = (text: string, highlightedIndexes: number[]) 
                       : ""
                   }
                 >
-                  {word}
+                  {normalizeQuranicMarks(word)}
                 </span>{" "}
               </React.Fragment>
             );
@@ -307,7 +308,7 @@ const renderHighlightedHamzaText = (text: string, highlightedIndexes: number[]) 
                     : ""
                 }
               >
-                {word}
+                {normalizeQuranicMarks(word)}
               </span>{" "}
             </React.Fragment>
           );

@@ -7,6 +7,7 @@ import {
   GRAMMAR_MOCK_DATA,
   GrammarRuleRecord,
   GrammarExample,
+  parseGrammarCsv,
 } from "@/components/grammarMockData";
 
 interface GrammarLinguisticSearchProps {
@@ -20,11 +21,33 @@ interface GrammarLinguisticSearchProps {
 export default function GrammarLinguisticSearch({
   onAyahSelected,
 }: GrammarLinguisticSearchProps) {
+
+  // Add state for dynamic CSV Grammar records
+    const [grammarRecords, setGrammarRecords] = useState<GrammarRuleRecord[]>([]);
+
+    // Pre-load CSV dataset for Grammar inside useEffect
+    useEffect(() => {
+    async function loadGrammarCsvData() {
+        try {
+        const res = await fetch("/grammar_full.csv");
+        const csvText = await res.text();
+        const parsedRecords = parseGrammarCsv(csvText);
+        setGrammarRecords(parsedRecords);
+        } catch (err) {
+        console.error("خطأ أثناء تحميل ملف CSV الخاص بالهمزات:", err);
+        }
+    }
+
+    loadGrammarCsvData();
+    }, []);
+
   // 1. Cascading Selection Levels State
   const [lvl1, setLvl1] = useState<string>(""); // الباب
   const [lvl2, setLvl2] = useState<string>(""); // المجال
   const [lvl3, setLvl3] = useState<string>(""); // المقدم
   const [lvl4, setLvl4] = useState<string>(""); // المؤخر
+
+  
 
   // 2. Subtitle Cue Cache State
   const [srtDataStore, setSrtDataStore] = useState<Record<number, AyahCue[]>>({});
@@ -85,12 +108,22 @@ export default function GrammarLinguisticSearch({
   };
 
   // Filter matching rules against active 4-level taxonomy selections
-  const activeGrammarRules = GRAMMAR_MOCK_DATA.filter((rule) => {
+//   const activeGrammarRules = GRAMMAR_MOCK_DATA.filter((rule) => {
+//     if (!lvl1) return false;
+//     if (lvl1 && rule.bab !== lvl1) return false;
+//     if (lvl2 && rule.majal !== lvl2) return false;
+//     if (lvl3 && rule.muqaddam !== lvl3) return false;
+//     if (lvl4 && rule.muakhar !== lvl4) return false;
+//     return true;
+//   });
+// Update active filtering to evaluate against grammarRecords
+  const activeGrammarRules = grammarRecords.filter((rule) => {
     if (!lvl1) return false;
-    if (lvl1 && rule.bab !== lvl1) return false;
-    if (lvl2 && rule.majal !== lvl2) return false;
-    if (lvl3 && rule.muqaddam !== lvl3) return false;
-    if (lvl4 && rule.muakhar !== lvl4) return false;
+    // const [p1, p2, p3, p4] = rule.bab;
+    if (lvl1 &&  rule.bab !== lvl1) return false;
+    if (lvl2 &&  rule.majal !== lvl2) return false;
+    if (lvl3 &&  rule.muqaddam !== lvl3) return false;
+    if (lvl4 &&  rule.muakhar !== lvl4) return false;
     return true;
   });
 
@@ -249,37 +282,37 @@ export default function GrammarLinguisticSearch({
               className="p-4 text-right rounded-radius border bg-popover text-popover-foreground border-border space-y-3"
             >
               {/* Header Badges */}
-              <div className="flex justify-between items-center text-xs font-mono font-bold text-primary border-b border-border pb-2">
-                <span>[{rule.id}] {rule.title}</span>
+              <div className="flex justify-between items-center text-xs font-bold text-primary border-b border-border pb-2">
+                <span>{rule.title}</span>
                 <span className="text-muted-foreground font-sans text-[11px] bg-muted px-2 py-0.5 rounded-radius">
                   {rule.bab}
                 </span>
               </div>
 
               {/* Rule Explanation */}
-              <p className="text-xs text-muted-foreground bg-muted/40 p-2.5 rounded-radius border border-border">
+              {/* <p className="text-xs text-muted-foreground bg-muted/40 p-2.5 rounded-radius border border-border">
                 <strong className="text-primary">القاعدة النحوية:</strong> {rule.grammaticalRule}
-              </p>
+              </p> */}
 
               {/* Quranic Example Chips */}
               <div className="space-y-2">
-                <span className="text-xs font-bold text-muted-foreground block">
-                  الشواهد القرآ نية (انقر للتسمع ولتحديث اللوحة التفسيرية ◀):
-                </span>
+                {/* <span className="text-xs font-bold text-muted-foreground block">
+                  الشواهد القرآ نية (انقر للتسمع ولتحديث اللوحة التفسيرية):
+                </span> */}
                 <div className="flex flex-wrap gap-2">
                   {rule.quranicExamples.map((ex) => (
                     <button
                       key={ex.id}
                       onClick={() => handleExampleClick(ex)}
-                      className="bg-card hover:bg-accent/30 border border-border hover:border-accent p-2.5 rounded-radius flex items-center space-x-reverse space-x-2 transition-all shadow-sm hover:shadow"
+                      className="bg-card hover:bg-accent/30 border border-border hover:border-accent p-2.5 rounded-radius flex flex-col items-start space-x-reverse space-x-2 transition-all shadow-sm hover:shadow"
                     >
                       <span className="text-xs font-mono font-bold text-primary">
-                        [{ex.id}] {ex.surahName}:{ex.ayahNumber}
+                        {ex.surahName}:{ex.ayahNumber}
                       </span>
-                      <span className="text-base font-quran font-bold text-foreground">
-                        {renderHighlightedGrammarText(ex.text, ex.highlighted || [])}
+                      <span className="text-base font-mono text-foreground">
+                        {renderHighlightedGrammarText(ex.ayah, ex.highlighted || [])}
                       </span>
-                      <span className="text-xs text-primary">▶</span>
+                      {/* <span className="text-xs text-primary">▶</span> */}
                     </button>
                   ))}
                 </div>
