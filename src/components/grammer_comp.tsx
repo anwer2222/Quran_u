@@ -8,6 +8,8 @@ import { playAudioSegment } from "@/components/audioHandler";
 interface ActiveAyahState {
   surah: number;
   ayah: number;
+  ayahStr: string;
+  ref: string;
   text: string;
   startTime: number;
 }
@@ -46,7 +48,7 @@ export default function GrammarSearchPage() {
   const handleAyahSelected = async (
     audioSrc: string,
     startTime: number,
-    ayahMeta: { surah: number; ayah: number; text: string }
+    ayahMeta: { surah: number; ayah: number; text: string; ayahStr:string, ref:string }
   ) => {
     setActiveAyah({
       ...ayahMeta,
@@ -132,7 +134,7 @@ export default function GrammarSearchPage() {
                     </span>
                   </div>
                   <button
-                    onClick={togglePlayPause}
+                    // onClick={togglePlayPause}
                     className="px-4 py-2 bg-primary text-primary-foreground text-xs font-bold rounded-radius hover:bg-primary/90 transition-all shadow-sm"
                   >
                     {isPlaying ? "إيقاف مؤقت ⏸" : "تشغيل التلاوة ◀"}
@@ -159,21 +161,22 @@ export default function GrammarSearchPage() {
                   <span className="inline-block text-[11px] font-mono bg-secondary text-secondary-foreground px-2 py-0.5 rounded-radius font-semibold mb-2">
                     النص القرآني المباشر
                   </span>
-                  <p className="text-xl font-quran text-right border-r-4 border-accent pr-3 py-2 bg-muted/30 rounded-l-radius leading-relaxed">
-                    {activeAyah.text}
+                  <p className="text-xl font-mono text-right border-r-4 border-accent pr-3 py-2 bg-muted/30 rounded-l-radius leading-relaxed">
+                    {activeAyah.ayahStr}
                   </p>
                 </div>
 
                 {/* Dynamic Tafseer Display */}
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                    التفسير والبيان (التفسير الميسر)
+                    التفسير والبيان
                   </h3>
                   {loadingTafseer ? (
                     <p className="text-xs text-muted-foreground">جاري تحميل البيانات التفسيرية...</p>
                   ) : (
                     <p className="text-sm font-serif leading-relaxed text-foreground/90 bg-popover p-3.5 rounded-radius border border-border">
-                      {currentTafseerText}
+                      {activeAyah.text+ " "} 
+                      {activeAyah.ref}
                     </p>
                   )}
                 </div>

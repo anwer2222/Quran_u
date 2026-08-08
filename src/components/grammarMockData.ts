@@ -5,6 +5,7 @@ export interface GrammarExample {
     ayahNumber: number;
     text: string;
     ayah: string;
+    ref:string;
     highlighted: number[]; // 0-based word indexes for highlighted syntactic structure
   }
   
@@ -148,8 +149,8 @@ export interface GrammarExample {
       title: "تقدم الخبر (جار ومجرور) على المبتدأ (اسم ظاهر)",
       grammaticalRule: "تقديم الخبر الوجوبي/الجوازي عند كون الخبر شبه جملة والمبتدأ نكرة أو معرفة.",
       quranicExamples: [
-        { id: "G001", surahName: "الفاتحة", surah: 1, ayahNumber: 2, ayah: "الْحَمْدُ لِلَّهِ", text:"الْحَمْدُ",highlighted: [0, 1] },
-        { id: "G002", surahName: "البقرة", surah: 2, ayahNumber: 10, ayah: "فِي قُلُوبِهِم مَّرَضٌ", text: "قُلُوبِهِم", highlighted: [0, 1, 2] },
+        { id: "G001", surahName: "الفاتحة", surah: 1, ayahNumber: 2, ayah: "الْحَمْدُ لِلَّهِ", text:"الْحَمْدُ",highlighted: [0, 1],ref:"" },
+        { id: "G002", surahName: "البقرة", surah: 2, ayahNumber: 10, ayah: "فِي قُلُوبِهِم مَّرَضٌ", text: "قُلُوبِهِم", highlighted: [0, 1, 2],ref:"" },
       ],
     },
     {
@@ -161,7 +162,7 @@ export interface GrammarExample {
       title: "تقدم المفعول به الضمير المنفصل على الفعل ليفيد الحصر والاختصاص",
       grammaticalRule: "تقدم ضمير النصب المنفصل (إياك) على فعله لإفادة القصر والتخصيص.",
       quranicExamples: [
-        { id: "G003", surahName: "الفاتحة", surah: 1, ayahNumber: 5, text:"وَإِيَّاكَ",ayah: "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ", highlighted: [0, 1] },
+        { id: "G003", surahName: "الفاتحة", surah: 1, ayahNumber: 5, text:"وَإِيَّاكَ",ayah: "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ", highlighted: [0, 1],ref:"" },
       ],
     },
   ];
@@ -193,6 +194,49 @@ function getHighlightedIndexes(ayahText: string, targetedWord: string): number[]
   return indexes;
 }
 
+function getHighlightedIndexes2(ayahText: string, targetedWord: string): number[] {
+  if (!ayahText || !targetedWord) return [];
+
+  const textWords = ayahText.trim().split(/\s+/);
+  const cleanTarget = targetedWord.trim();
+  const indexes: number[] = [];
+
+  // If the target contains a space, it's a multi-word sequence phrase
+  if (cleanTarget.includes(" ")) {
+    const targetTokens = cleanTarget.split(/\s+/).map((t) => t.replace(/[^\u0600-\u06FF]/g, ""));
+    
+    for (let i = 0; i <= textWords.length - targetTokens.length; i++) {
+      let matched = true;
+      for (let j = 0; j < targetTokens.length; j++) {
+        const cleanTextWord = textWords[i + j].replace(/[^\u0600-\u06FF]/g, "");
+        if (!cleanTextWord || cleanTextWord !== targetTokens[j]) {
+          matched = false;
+          break;
+        }
+      }
+      if (matched) {
+        // Highlight all consecutive word indexes belonging to this sequence phrase
+        for (let j = 0; j < targetTokens.length; j++) {
+          indexes.push(i + j);
+        }
+        break; // Stop after finding the first sequence match
+      }
+    }
+  } else {
+    // Single word matching
+    const cleanTargetWord = cleanTarget.replace(/[^\u0600-\u06FF]/g, "");
+    for (let i = 0; i < textWords.length; i++) {
+      const cleanTextWord = textWords[i].replace(/[^\u0600-\u06FF]/g, "");
+      if (cleanTextWord && cleanTargetWord && cleanTextWord.includes(cleanTargetWord)) {
+        indexes.push(i);
+      }
+    }
+  }
+
+  return indexes;
+}
+
+
 /**
  * Parses the 8-column Grammar CSV file:
  * <1st level cat>,<2nd cat>,<3rd cat>,<4th cat>,<surahNumber>,<ayahNumber>,<ayahText>,<targetedWord>
@@ -209,7 +253,7 @@ export function parseGrammarCsv(csvContent: string): GrammarRuleRecord[] {
     const parts = line.split(",").map((p) => p.trim().replace(/^"|"$/g, ""));
 
     if (parts.length >= 8) {
-      const [cat1, cat2, cat3, cat4, surahNumber, ayahNumber, ayahText, t1,t2, surahStr, tp, ref] = parts;
+      const [cat1, cat2, cat3, cat4, surahNumber, ayahNumber, ayahText, t1,t2, surahStr, tp, ref, a1,a2] = parts;
 
       const surahNum = parseInt(surahNumber, 10) || 1;
       const ayahNum = parseInt(ayahNumber, 10) || 1;
@@ -220,7 +264,11 @@ export function parseGrammarCsv(csvContent: string): GrammarRuleRecord[] {
       const targetedWord = t1 + " | "+ t2
 
       // Calculate highlighted word indexes dynamically
-      const highlighted = getHighlightedIndexes(ayahText, targetedWord);
+      let highlighted = getHighlightedIndexes2(ayahText, a1);
+      if (a2) {
+        highlighted.push(getHighlightedIndexes(ayahText, a2)[0])
+      }
+
 
       const example: GrammarExample = {
         id: `HZM_${i + 1}`,
@@ -228,7 +276,8 @@ export function parseGrammarCsv(csvContent: string): GrammarRuleRecord[] {
         surah: surahNum,
         ayahNumber: ayahNum , //===2?31:ayahNum===31?2:ayahNum,
         ayah: ayahText,
-        text: t1+ " - "+ t2+", "+ref,
+        text: t1+ " - "+ t2,
+        ref:ref,
         highlighted,
       };
 

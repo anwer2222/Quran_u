@@ -14,7 +14,7 @@ interface GrammarLinguisticSearchProps {
   onAyahSelected: (
     audioSrc: string,
     startTime: number,
-    ayahMeta: { surah: number; ayah: number; text: string }
+    ayahMeta: { surah: number; ayah: number; text: string, ayahStr: string, ref:string }
   ) => void;
 }
 
@@ -141,6 +141,8 @@ export default function GrammarLinguisticSearch({
       surah: surahNum,
       ayah: ayahNum,
       text: example.text,
+      ayahStr: example.ayah,
+      ref: example.ayah
     });
   };
 
@@ -303,7 +305,7 @@ export default function GrammarLinguisticSearch({
                   {rule.quranicExamples.map((ex) => (
                     <button
                       key={ex.id}
-                      onClick={() => handleExampleClick(ex)}
+                      onClick={() => handleExampleClick({...ex,ref:rule.grammaticalRule})}
                       className="bg-card hover:bg-accent/30 border border-border hover:border-accent p-2.5 rounded-radius flex flex-col items-start space-x-reverse space-x-2 transition-all shadow-sm hover:shadow"
                     >
                       <span className="text-xs font-mono font-bold text-primary">
